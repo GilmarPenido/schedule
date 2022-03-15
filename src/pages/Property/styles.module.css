@@ -1,0 +1,303 @@
+.panel {
+    grid-area: main;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.rowAction {
+    height: 50px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0 15px;
+}
+
+.rowAction svg {
+    color: var(--grey-icon);
+    vertical-align: middle;
+    font-size: 1rem;
+    margin-right: 5px;
+}
+
+.rowAction span {
+    color: var(--blue);
+    font-size: 1rem;
+    vertical-align: top;
+}
+
+.rowAction button {
+    width: 80px;
+    height: 30px;
+}
+
+
+
+.cardContainer {
+    display: flex;
+    justify-content: space-around;
+    flex-direction: row;
+    width: 100%;
+    max-width: 1250px;
+}
+
+.card {
+    padding: 25px;
+    margin: 0 10px;
+    border: 0.5px solid #ddd;
+    border-radius: 15px;
+    box-shadow: 0 3px 3px 0px #ddd;
+    flex: 0 1 50%;
+    max-width: 600px;
+    min-width: 380px;
+    
+}
+
+ @media (max-width: 980px) {
+    .cardContainer {
+        flex-direction: column;
+        align-items: center;
+    
+    }
+
+    .card {
+        min-width: 500px;
+    }
+}
+
+@media (max-width: 700px) {
+
+    .card {
+        min-width: 93vw;
+    }
+} 
+
+.cardTitle {
+    color: var(--blue);
+    font-size: 1.2rem;
+}
+
+.cardTitle svg {
+    font-size: 1.8rem;
+}
+
+.cardTitle span {
+    vertical-align: top;
+}
+
+
+
+.inputGroupProperties {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+}
+
+.inputGroupProperties input{
+    width: 49%  ;
+    
+}
+
+.inputGroupPhone {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+.inputGroup {
+    margin-top: 10px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.inputGroupEmail {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+.inputGroupContainer {
+    width: 85%;
+}
+
+.inputGroup select {
+    min-width: 19%;
+    height: 36px;
+    border: 0.5px solid #ddd;
+    border-radius: 5px;
+}
+
+.inputGroup input {
+    height: 36px;
+    min-width: 79%;
+    padding-left: 10px;
+    border: 0.5px solid #ddd;
+    border-radius: 5px
+}
+
+
+.inputControl {
+    height: 36px;
+    width: 100%;
+    margin-top: 10px;
+    padding-left: 10px;
+    outline: none;
+    border: 0.5px solid #ddd;
+    border-radius: 5px
+
+}
+
+.inputControl:active {
+    border: none;
+}
+
+.inputGroupRadio input {
+    padding-top: 2px;
+}
+.inputGroupRadio span {
+    font-size: 0.7rem;
+}
+
+.actionsPhone {
+    padding-top: 8px;
+    width: 10%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    font-size: 1.4rem;
+
+}
+
+.actionsEmail {
+    padding-top: 8px;
+    width: 5%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    font-size: 1.4rem;
+}
+
+.smsIcon {
+    color: var(--blue);
+}
+
+.trashIcon {
+    color: var(--error);
+    cursor: pointer;
+}
+
+.starIcon {
+    color: gold;
+    min-width: 5%;
+    vertical-align: middle;
+    margin-top: 18px;
+    cursor: pointer;
+}
+
+.starIconSelected {
+    color: gold;
+    animation-name: rotateStar;
+    animation-duration: 1.5s;
+    min-width: 5%;
+    vertical-align: middle;
+    margin-top: 18px;
+    cursor: pointer;
+}
+
+.addPhone {
+    color: white;
+    font-size: 1.1rem;
+    vertical-align: middle;
+}
+
+.addPhoneGroup {
+    font-size: 0.8rem;
+    color: white;
+    border: none;
+    width: 150px;
+    border-radius: 5px;
+    background-color: var(--success);
+    outline: none;
+    height: 30px;
+    cursor: pointer;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.addPhoneGroup:active {
+    transform: scale(0.9);
+}
+
+.notificationsAccordion, .additionalDetailAccordion {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding-top: 10px;
+    border-top: 1px solid #333;
+}
+
+.notificationsAccordion svg{ 
+    cursor: pointer;
+    padding: 5px;
+    margin: -5px;
+    font-size: 1.8rem;
+}
+
+/* .listOfNotifications {
+    display: flex;
+    flex-direction: row;
+} */
+
+.notificationsContainer, .additionalDetailContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 15px;
+}
+
+
+
+.rowNotification {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 5px 0;
+}
+
+.rowNotification .textContainer {
+    display: flex;
+    flex-direction: column;
+    text-overflow: clip;
+    font-size: 0.8rem;
+}
+
+.listOfNotifications {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.taxRateContainer {
+    font-size: 0.8rem;
+    margin-bottom: 5px;
+}
+
+.taxRateContainer span{
+    color: var(--success);
+}
+
+@keyframes rotateStar {
+
+    0% {
+        transform: rotate(180deg);
+    }
+    100% {
+        transform: rotate(0deg);
+    }
+}

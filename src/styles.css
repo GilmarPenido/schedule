@@ -1,0 +1,99 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", Helvetica, Arial, sans-serif;
+}
+
+:root {
+    --blue: #2c517b;
+    --grey-input: #fafafa;
+    --grey-menu: #f3f3f5;
+    --grey-links: #a9acb1;
+    --grey-icon: #797979;
+    --grey-font: #424242;
+    --grey-line: #b7b7b7;
+    --grey-placeholder : #b3b3b3;
+    --white: white;
+    --error: #b32f3a;
+    --red-icon: #fbdcd9;
+    --success: #01c293;
+    --gold: #ffdc28;
+}
+
+h1, h2, h3, h4 {
+    color: var(--blue);
+}
+
+select, input, textarea {
+    background: var(--grey-input);
+}
+
+/* .container {
+    width: 100vw;
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 70px auto ;
+    grid-template-rows: 60px auto;
+    grid-template-areas: "main main"
+                         "main main";
+    overflow-y: auto !important;
+    transition:  grid-template-columns 2s;
+}
+
+@media (max-width: 700px) {
+
+    .container {
+        width: 100vw;
+        height: 100vh;
+        display: grid;
+        grid-template-columns: 100vw ;
+        grid-template-rows: 60px auto;
+        grid-template-areas: "main  main"
+                             "main main";
+        overflow-y: auto !important;
+        transition:  grid-template-columns 2s;
+    }
+
+    .btn {
+        margin: 0 2px !important;
+        width: 70px !important;
+        font-size: .7rem;
+    }
+} 
+
+.container.close {
+    grid-template-columns: 70px auto ;
+}
+
+
+.container.opened {
+    grid-template-columns: 140px auto ;
+} */
+
+
+.btn {
+    border-radius: 5px;
+    margin: 0 5px;
+    cursor: pointer;
+}
+
+.btn-close {
+    color: #666;
+    background-color: #ddd;
+    
+    border: 1.5px solid #aaa;
+    
+}
+
+.btn-save {
+    color: var(--success);
+    background-color: var(--white);
+    border: 1.5px solid var(--success);
+}
+
+.btn-confirm{
+    color: var(--white);
+    background-color: var(--success);
+    border: 1.5px solid var(--success);
+}

@@ -1,0 +1,50 @@
+.container {
+    border-radius: 0px 20px 20px 0;
+    background: var(--grey-menu);
+    grid-area: sidenav;
+    color: var(--grey-links);
+    padding: 5px;
+    padding-top: 15px;
+    text-align: center;
+    margin-right: 15px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+@media (max-width: 700px) {
+
+    .container {
+        transform: translateX(-70px);
+    }
+} 
+
+
+
+.hamburguer {
+    margin-bottom: 35px;
+}
+
+.bottomLinks {
+    margin-bottom: 35px;
+}
+
+.sidNavLinks {
+    margin: 10px 0;
+}
+
+.sidNavLinks svg {
+    cursor: pointer;
+
+}
+
+.sidNavLinks.selected {
+    color: #666;
+}
+
+.sidNavLinks svg:hover {
+    transform: scale(1.1);
+    color: #666;
+    
+}

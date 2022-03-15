@@ -1,0 +1,62 @@
+.container-alerta {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    background: rgba(58, 58, 58, 0.9);
+}
+
+.modal-alerta {
+    position: relative;
+    width: 550px;
+    height: 230px;
+    border-radius: 30px;
+    box-shadow: -1px 1px 2px #686868 ;
+    background: white;
+    top: 50%;
+    margin: 0 auto;
+    transform: translateY(-50%);
+}
+
+.modal-fechar {
+    position: absolute;
+    width: 30px;
+    right: -40px;
+    top: -10px;
+}
+
+.corpo-alerta {
+    font-size: 1.8rem;
+}
+
+.corpo-alerta p, .corpo-alerta p b{
+    font-size: 0.8rem;
+    color: var(--grey-font);
+    width: 70%;
+}
+
+.corpo-alerta p {
+    margin-left: 75px;
+}
+
+.modal-sucesso img, .modal-erro img{ 
+    width: 45px;
+    height: 45px;
+    margin: 0 15px;
+}
+
+.modal-sucesso {
+    color: rgb(27, 218, 27);
+    padding-top: 25px;
+    width: 100%;
+    display: flex;
+}
+
+
+.modal-erro {
+    color: #d03436;
+    padding-top: 25px;
+    width: 100%;
+    display: flex;
+} 
