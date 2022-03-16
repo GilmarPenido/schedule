@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, lazy } from "react";
-import { FaDotCircle, FaFilter, FaRegWindowClose } from "react-icons/fa";
+import { FaDotCircle, FaExchangeAlt, FaFilter, FaRegWindowClose } from "react-icons/fa";
 import { ImArrowLeft, ImArrowRight } from "react-icons/im";
 import { RiVipCrownFill, RiUserFill } from "react-icons/ri";
 import { ImSpinner9 } from "react-icons/im";
@@ -28,6 +28,8 @@ import ChangeTeamModel from "../../Models/change-model";
 import { v4 as uuidv4, v4 } from 'uuid';
 import ModalViewSchedule from "../../components/ModalViewSchedule";
 import ModalAddNote from "../../components/ModalAddNote";
+import ModalChangeTeam from "../../components/ModalChangeTeam";
+
 
 const days = 7;
 const daysString = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -85,6 +87,7 @@ export default function Schedule(props: any) {
     const [openModalEdit, setOpenModalEdit] = useState(false);
     const [openModalView, setOpenModalView] = useState(false);
     const [openModalAddNote, setOpenModalAddNote] = useState(false);
+    const [openModalChangeTeam, setOpenModalChangeTeam] = useState(false);
     
     const [modalConfirmText, setModalConfirmText] = useState('');
     const [modalConfirmTitle, setModalConfirmTitle] = useState('');
@@ -144,9 +147,10 @@ export default function Schedule(props: any) {
             setModalConfirmTitle('Moving Card');
 
             confirmAction.current = function () {
+                
                 setConfirmDrag(false);
-
-                ScheduleService.update(currentCard.WC_CLIENTE_COD, team, dt, hr, currentCard, '', endHour)
+                let flag = currentCard?.SAS_SINALIZADOR === 'recurrency' ? 'moved' : '';
+                ScheduleService.update(currentCard.WC_CLIENTE_COD, team, dt, hr, currentCard, flag, endHour)
                     .then(
                         _ => {
 
@@ -160,16 +164,19 @@ export default function Schedule(props: any) {
                                 currentCard.SAS_SCHEDULE_STATUS = 'Skip';
                                 currentCard.SAS_SCHEDULE_OBSERVA = 'Service time change';
                                 currentCard.SAS_SCHEDULE_ID = uuidv4();
-                                ScheduleService.save(currentCard);
+                                return ScheduleService.save(currentCard);
                             }
-
-                            scheduleUpdate(currentCard.SAS_EQUIPE_ID, currentCard.SAS_SCHEDULE_DATA);
-
-                            scheduleUpdate(team, dt);
-                            setCurrentCard(undefined);
+                            return Promise.resolve();
+                            
                         }
 
-                    ).catch(err => {
+                    ).then( _ => {
+
+                        scheduleUpdate(currentCard.SAS_EQUIPE_ID, currentCard.SAS_SCHEDULE_DATA);
+                        scheduleUpdate(team, dt);
+                        setCurrentCard(undefined);
+                    })
+                    .catch(err => {
                         alert('Error, close this window and try again!');
                         setCurrentCard(undefined);
                         setTimeout(() => {
@@ -862,6 +869,10 @@ export default function Schedule(props: any) {
         setOpenModalView(true);
     }
 
+
+    function openChangeTeam() {
+        setOpenModalChangeTeam(true);
+    }
     
 
     return (
@@ -917,7 +928,7 @@ export default function Schedule(props: any) {
                 contextTeamMenu &&
 
                 <div className={styles.contextMenu} style={{ top: positionY, left: positionX }} onMouseLeave={closeContextTeamMenu}>
-                    <div className={`${styles.contextMenuOption} ${true ? '' : styles.contextMenuOptionDisabled}`} onClick={releaseTeam} >Release Team</div>
+                    <div className={`${styles.contextMenuOption} ${true ? '' : styles.contextMenuOptionDisabled}`} onClick={openChangeTeam} >Change Team</div>
                 </div>
             }
 
@@ -967,10 +978,6 @@ export default function Schedule(props: any) {
                                     currentCard={currentCard}
                                 />
                             }
-
-
-
-
 
                             {
                                 confirmDrag &&
@@ -1042,6 +1049,13 @@ export default function Schedule(props: any) {
                                 />
                             }
 
+                            {
+
+                                openModalChangeTeam &&
+
+                                <ModalChangeTeam />
+                            }
+
                             {/* {
                                 openModal &&
                                 <ModalAddScheduleDay
@@ -1071,7 +1085,7 @@ export default function Schedule(props: any) {
 
                                         <div onClick={() => window.history.back()}>
                                             <FaRegWindowClose />
-                                            <span><b>Schedule V1.013</b></span>
+                                            <span><b>Schedule V1.031</b></span>
                                         </div>
                                     </div>
 
@@ -1167,6 +1181,9 @@ export default function Schedule(props: any) {
                                                                                                             <>
                                                                                                                 {sche.SAS_SINALIZADOR === 'recurrency' &&
                                                                                                                     <AiFillTrademarkCircle size={'14px'}></AiFillTrademarkCircle>}
+
+                                                                                                                {sche.SAS_SINALIZADOR === 'moved' &&
+                                                                                                                    <FaExchangeAlt size={'14px'}></FaExchangeAlt>}
 
                                                                                                                 {sche.SAS_SINALIZADOR === '' &&
                                                                                                                     <AiFillMediumCircle size={'14px'}></AiFillMediumCircle>}

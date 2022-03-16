@@ -32,7 +32,7 @@
 
 .corpoAlerta p, .corpoAlerta p b{
     font-size: 0.8rem;
-    color: var(--grey-font);
+    color: #fff;
     width: 70%;
 }
 

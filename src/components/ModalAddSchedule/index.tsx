@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styles from './styles.module.css';
 import addSchedule from '../../assets/add_schedule.png';
 import { FaPlus, FaRegWindowClose } from 'react-icons/fa';
@@ -36,8 +36,35 @@ interface Iprops {
     oportuniId: any
 }
 
+
+/* const valid$ = new Subject(); */
+
 export default function ModalAddSchedule(props: Iprops) {
 
+
+
+
+    /* useEffect(() => {
+
+
+        let update = valid$
+        .pipe(
+            debounceTime(500)
+        )
+        .subscribe(() => {
+            createArrayOptionsDate();
+        })
+
+    }, [])
+ */
+    /* const updateProcedureable((observer) => {
+        createArrayOptionsDate();
+        observer.complete();
+    }).pipe(
+        debounceTime(500)
+    ).subscribe(); */
+
+    const actualRequisition = useRef<number>(0);
 
     const [controlRecurrency, setControlRecurrency] = useState(true);
 
@@ -367,7 +394,7 @@ export default function ModalAddSchedule(props: Iprops) {
                         SAS_SCHEDULE_DATA: rd.date.toLocaleString('pt-BR', { dateStyle: "short" }).split('/').reverse().join(''),
                         SAS_SCHEDULE_HRFIM: endHour,
                         SAS_SCHEDULE_HRINICIO: rd.time,
-                        SAS_SCHEDULE_ID: props.currentCard?.SAS_SCHEDULE_ID ? props.currentCard?.SAS_SCHEDULE_ID : uuidv4(),
+                        SAS_SCHEDULE_ID: uuidv4(),
                         SAS_SCHEDULE_STATUS: 'ATIVO',
                         SAS_EQUIPE_INICIAL_ID: selectedTeam.value,
                         WC_PRODUTO_COD: service.value,
@@ -408,11 +435,14 @@ export default function ModalAddSchedule(props: Iprops) {
                     dateTimer.setHours(hr);
                     dateTimer.setMinutes(min + service.duration); */
 
-
+                    let sinalizador = recurrency ? 'recurrency' : ''
 
                     if (props.currentCard?.SAS_SCHEDULE_ID && props.currentCard?.SAS_SCHEDULE_ID !== 'Skip') {
 
+
                         if (props.currentCard?.SAS_SINALIZADOR === "recurrency" && props.currentCard?.SAS_SCHEDULE_STATUS !== 'Skip') {
+
+                            sinalizador = 'moved';
 
                             let skipedCard: any = {
                                 ...props.currentCard,
@@ -445,7 +475,7 @@ export default function ModalAddSchedule(props: Iprops) {
                         SAS_SCHEDULE_STATUS: 'ATIVO',
                         SAS_EQUIPE_INICIAL_ID: selectedTeam.value,
                         WC_PRODUTO_COD: service.value,
-                        SAS_SINALIZADOR: recurrency ? 'recurrency' : '',
+                        SAS_SINALIZADOR: sinalizador,
                         SAS_SCHEDULE_OBSERVA: comments,
                         SAS_PROP_ID: property.value,
                         WF_OPORTUNI_ID: props?.oportuniId || '',
@@ -608,8 +638,6 @@ export default function ModalAddSchedule(props: Iprops) {
         let lastDate: Date = new Date(endDate)
         lastDate.setMinutes(lastDate.getMinutes() + lastDate.getTimezoneOffset())
 
-
-
         let datetime = new Date();
 
         let [hrStr, minStr] = startTime.split(':');
@@ -673,6 +701,20 @@ export default function ModalAddSchedule(props: Iprops) {
             dates[index]['time'] = time;
         }))
 
+        await Promise.all(dates.map(async (dtObj: any, index: number) => {
+
+            let result = await QueryExec.exec(`SELECT TOP 1 * FROM SAS_SCHEDULE WHERE WC_CLIENTE_COD = ${client.value} AND SAS_SCHEDULE_DATA BETWEEN '${formatDate(dtObj.date)}' AND '${formatDate(dtObj.date)}' AND SAS_SCHEDULE_STATUS <> 'CANCELED'`);
+            
+            if (result.length) {
+                dates[index]['note'] = "User already scheduled for this date";
+            }
+
+        }));
+
+        if (dates.some((dt: any) => dt?.note === "User already scheduled for this date")) {
+            setShowPopoverError(true);
+        }
+
         setRecurringDates(dates);
 
         setLoading(false);
@@ -729,6 +771,7 @@ export default function ModalAddSchedule(props: Iprops) {
                 return;
             }
             setLoading(true);
+            /* valid$.next(true); */
             createArrayOptionsDate();
         } else {
 
@@ -845,7 +888,14 @@ export default function ModalAddSchedule(props: Iprops) {
                                                 <input type="date" value={endDate} name='EndDate' onChange={(event) => setEndDate(event.target.value)} />
                                             </div>
                                             <div className={styles.shortcutYers}>
-                                                <BiPlusCircle size={20} onClick={() => addYears(1)}></BiPlusCircle>
+                                                {
+                                                    loading ?
+                                                    <div className={styles.loadingScreen} style={{ display: "inline" }}>
+                                                        <ImSpinner9 color='#008461' size={20}></ImSpinner9>
+                                                    </div>
+                                                :
+                                                    <BiPlusCircle size={20} onClick={() => addYears(1)}></BiPlusCircle>
+                                                }
                                             </div>
                                         </>
                                     }
