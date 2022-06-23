@@ -65,6 +65,21 @@
     font-size: 16px;
 }
 
+
+.optionsRadio {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    width: 400px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.optionsRadio div label {
+    margin-right: 15px;
+    margin-left: 5px;
+}
+
 .inputGroup {
     margin-top: 10px;
     width: 100%;

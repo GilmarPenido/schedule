@@ -114,7 +114,6 @@ export default function ModalEditSchedule(props: Iprops) {
 
 
     useEffect(() => {
-        console.log('aqui')
         searchService();
 
     }, [
@@ -329,7 +328,7 @@ export default function ModalEditSchedule(props: Iprops) {
 
         updateProperty(comments);
 
-        if (recurringDates.some((dt: any) => dt?.procedure?.DISPONIBILIDADE === 'NOK')) {
+        if (recurringDates.some((dt: any) => dt?.procedure?.some( (p: any) => p.DISPONIBILIDADE === 'NOK') )) {
             alert('Error! Schedule Conflict.')
             return;
         }
@@ -353,7 +352,7 @@ export default function ModalEditSchedule(props: Iprops) {
                     SAS_SCHEDULE_DATA: rd.date.toLocaleString('pt-BR', { dateStyle: "short" }).split('/').reverse().join(''),
                     SAS_SCHEDULE_HRFIM: endHour,
                     SAS_SCHEDULE_HRINICIO: rd.time,
-                    SAS_SCHEDULE_ID: props.currentCard?.SAS_SCHEDULE_ID ? props.currentCard?.SAS_SCHEDULE_ID : uuidv4(),
+                    SAS_SCHEDULE_ID: uuidv4(),
                     SAS_SCHEDULE_STATUS: 'ATIVO',
                     SAS_EQUIPE_INICIAL_ID: selectedTeam.value,
                     WC_PRODUTO_COD: service.value,
@@ -491,7 +490,7 @@ export default function ModalEditSchedule(props: Iprops) {
 
             let scheduleStats: ScheduleProcedureModel[] = await QueryExec.exec(`EXECUTE [dbo].[scheduler_builder_tester] '${service.value}','${selectedTeam.value}','${formatDate(dtObj.date)}','${time}'`);
             if (scheduleStats.length) {
-                dates[index]['procedure'] = scheduleStats[0];
+                dates[index]['procedure'] = scheduleStats;
             }
             dates[index]['time'] = time;
             dates[index]['key'] = v4();
@@ -570,7 +569,7 @@ export default function ModalEditSchedule(props: Iprops) {
 
             let scheduleStats: ScheduleProcedureModel[] = await QueryExec.exec(`EXECUTE [dbo].[scheduler_builder_tester] '${service.value}','${selectedTeam.value}','${formatDate(dtObj.date)}','${time}'`);
             if (scheduleStats.length) {
-                dates[index]['procedure'] = scheduleStats[0];
+                dates[index]['procedure'] = scheduleStats;
             }
             dates[index]['time'] = time;
         }))
@@ -824,10 +823,10 @@ export default function ModalEditSchedule(props: Iprops) {
 
                                                     {
                                                         recurringDates.map((rd: any) => (
-                                                            <tr className={rd?.procedure?.DISPONIBILIDADE === 'NOK' ? styles.unavailable : ''} key={rd.key}>
+                                                            <tr className={rd?.procedure?.some( (p: any) => p.DISPONIBILIDADE === 'NOK')  ? styles.unavailable : ''} key={rd.key}>
                                                                 <td>{rd.date.toLocaleString('en-US', { day: 'numeric', month: 'numeric', year: 'numeric' })}</td>
                                                                 <td>{startTime}</td>
-                                                                <td>{rd?.procedure?.DISPONIBILIDADE === 'NOK' ? <HiXCircle size="20" color="#b32f3a"></HiXCircle> : <HiCheckCircle size="20" color="#01c293"></HiCheckCircle>}</td>
+                                                                <td>{rd?.procedure?.some( (p: any) => p.DISPONIBILIDADE === 'NOK')  ? <HiXCircle size="20" color="#b32f3a"></HiXCircle> : <HiCheckCircle size="20" color="#01c293"></HiCheckCircle>}</td>
                                                             </tr>
                                                         ))
                                                     }

@@ -94,6 +94,7 @@ const ScheduleService= {
             `&WC_PRODUTO_COD=${schedule.WC_PRODUTO_COD}` +
             `&SAS_PROP_ID=${schedule.SAS_PROP_ID}` +
             `&SAS_SINALIZADOR=${schedule.SAS_SINALIZADOR}` +
+            `&SAS_SCHEDULE_CREATEDAT=${schedule.SAS_SCHEDULE_CREATEDAT}` +
             `&idproc=0` +
             `&VALIDA_INI=true` +
             `&bsaved=false` + 
@@ -126,6 +127,34 @@ const ScheduleService= {
         let psw = 'admin';
 
         let url = `api?type=data&processo=${PROCESSO}&filbrw=SAS_PROP_ID=(${schedule.SAS_PROP_ID}) AND WC_CLIENTE_COD=(${schedule.WC_CLIENTE_COD}) AND SAS_SCHEDULE_HRINICIO=(${schedule.SAS_SCHEDULE_HRINICIO}) AND WC_PRODUTO_COD=(${schedule.WC_PRODUTO_COD}) AND SAS_EQUIPE_ID=(${schedule.SAS_EQUIPE_ID}) AND SAS_SCHEDULE_START_DATE=${schedule.SAS_SCHEDULE_START_DATE?.split('/').reverse().join('')} AND SAS_SCHEDULE_END_DATE=${schedule.SAS_SCHEDULE_END_DATE?.split('/').reverse().join('')}&navpage=${navpage}&maxreg=${maxreg}&pesqui=&format=json&usr=${usr}&psw=${psw}`;
+
+        return api.get(CONSTANTS.IP + url)
+            .then(
+                (retorno: AxiosResponse<{ dados: HttpObjectModel<ScheduleModel>}>) => {
+
+                    if(retorno.data && retorno.data.dados) {
+
+                        return retorno.data.dados.totalreg === 0 ? [] : retorno.data.dados.consulta
+
+                    }
+
+                    throw new Error("erro ao buscar dados");
+
+                }
+            ).catch( (err: any) => {
+
+                throw new Error(err)
+            })
+
+    },
+
+
+    getSpot: async (schedule: ScheduleModel, navpage: number = 0, maxreg: number = 1) => {
+
+        let usr = 'admin';
+        let psw = 'admin';
+
+        let url = `api?type=data&processo=${PROCESSO}&filbrw=SAS_SCHEDULE_HRINICIO=(${schedule.SAS_SCHEDULE_HRINICIO}) AND SAS_EQUIPE_ID=(${schedule.SAS_EQUIPE_ID}) AND SAS_SCHEDULE_DATE=${schedule.SAS_SCHEDULE_DATA?.split('/').reverse().join('')}&navpage=${navpage}&maxreg=${maxreg}&pesqui=&format=json&usr=${usr}&psw=${psw}`;
 
         return api.get(CONSTANTS.IP + url)
             .then(

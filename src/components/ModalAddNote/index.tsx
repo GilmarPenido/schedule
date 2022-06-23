@@ -48,10 +48,10 @@ export default function ModalAddNote(props: Iprops) {
 
                     <p>Add Note</p>
                     <textarea  
-                        onChange={(event) => {setText(event.target.value);}} rows={3} 
+                        onChange={(event) => {setText(event.target.value);}} rows={10} 
                         value={text} 
                         name="motivationSkip" 
-                        maxLength={150} 
+                        maxLength={2000} 
                         style={{width: '100%', resize: 'none', padding: '10px', borderRadius: '15px'}} 
                     ></textarea>
 

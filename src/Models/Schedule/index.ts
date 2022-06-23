@@ -28,4 +28,8 @@ export default interface ScheduleModel {
     SAS_SCHEDULE_CHKOUT_COM_TEXT?: string
     SAS_SCHEDULE_HORA_CHK_INF?: string
     SAS_SCHEDULE_HORA_CHO_IN?: string
+    SAS_SCHEDULE_UPDATEAT?: string
+    SAS_SCHEDULE_UPDATEDAT?: string
+    SAS_SCHEDULE_CREATEDAT?: string
+    SAS_SCHEDULE_REC_ID?: string
 }

@@ -25,6 +25,7 @@ import AsyncSelect from 'react-select/async';
 import { ChangeEvent } from 'react';
 import { start } from 'repl';
 import PopoverError from '../popover-error';
+import ValidDateSchedule from '../../services/valid-date-schedule';
 
 interface Iprops {
     fecharModal: any
@@ -76,6 +77,9 @@ export default function ModalAddSchedule(props: Iprops) {
 
     const [properties, setProperties] = useState<any>([]);
 
+
+    const [releaseConfirm, setReleaseConfirm] = useState(false);
+
     const [triggerAlert, setTriggerAlert] = useState(false);
     const [modalAlertaProps, setModalAlertaProps] = useState({
         tipo: "error",
@@ -86,8 +90,8 @@ export default function ModalAddSchedule(props: Iprops) {
 
     const [popoverProps, setPopoverProps] = useState({
         tipo: "Atention",
-        titulo: "Schedule for this user!",
-        texto: "User already scheduled for this date.",
+        titulo: "Atention!",
+        texto: "There are already appointments registered for this client in the selected period.",
         fecharModal: () => { setShowPopoverError(false) }
     })
     const [date, setDate] = useState<string>();
@@ -102,7 +106,7 @@ export default function ModalAddSchedule(props: Iprops) {
     const [property, setProperty] = useState<any>()
 
     const [startDate, setStartDate] = useState('');
-    const [startTime, setStartTime] = useState('08:30am');
+    const [startTime, setStartTime] = useState('8:30am');
     const [endDate, setEndDate] = useState('');
     const [every, setEvery] = useState<string>('1');
     const [frequency, setFrequency] = useState<'week' | 'day' | 'month' | 'year'>('week');
@@ -115,10 +119,17 @@ export default function ModalAddSchedule(props: Iprops) {
     const [disableFields, setDisableFields] = useState(false);
     const [disableFieldCli, setdisableFieldCli] = useState(false);
     const [skip, setSkip] = useState(false);
-    const [loadingScreen, setLoadingScreen] = useState(false);
-
+    const [loadingScreen, setLoadingScreen] = useState(true);
+    const [fullServices, setFullServices] = useState<any>([]);
     const [loading, setLoading] = useState(false);
     const [savingSchedule, setSavingSchedule] = useState(false);
+
+    const [FirstOpenning, setFirstOpenning] = useState(false);
+
+    const [validDates, setValidDates] = useState<any>({});
+
+
+    const [serviceType, setServiceType] = useState(1);
 
     const daysOfWeek = [
         {
@@ -151,12 +162,103 @@ export default function ModalAddSchedule(props: Iprops) {
         },
     ];
 
+    const startTimeForRework: any = {
+        '8:30am':'8:35am',
+        '10:00am': '10:05am',
+        '11:30am': '11:35am',
+        '01:00pm': '1:05pm',
+        '02:30pm': '2:35pm',
+        '03:30pm': '3:35pm'
+    }
 
     useEffect(() => {
+
+        ValidDateSchedule.get().then((res: any) => {
+            setValidDates(res);
+
+        }).catch(err => {
+            console.log(err);
+            alert('Error to load valid dates');
+        })
+
+    }, []);
+
+    useEffect(() => {
+
+        console.log(loadingScreen)
+
         if (!loadingScreen) {
             searchService();
         }
-    }, [startDate, startTime, endDate, every, frequency, dayOfWeek, property, service, client, selectedTeam, recurrency])
+    }, [startDate, startTime, endDate, every, frequency, dayOfWeek, property, service, client, selectedTeam, recurrency, comments])
+
+
+    function updateServices(allServices= fullServices) {
+        
+        let selectedServices = allServices.filter( (s: any) => {
+
+            if(serviceType === 1) {
+                return s.WC_FAMILIA_PROD_COD.toUpperCase() === "SERVICE"
+            }
+            
+            if(serviceType === 3) {
+                return s.WC_FAMILIA_PROD_COD.toUpperCase() === "EXTRA SERVICE"
+            }
+
+            return true;
+            
+        });
+
+        selectedServices = selectedServices.map( (s: any) => ({
+            value: s.WC_PRODUTO_COD,
+            label: s.WC_PRODUTO_DESC,
+            duration: s.SAS_SERVICE_DURACAO
+        }));
+
+        setServiceDetails(selectedServices);
+        setLoadingScreen(false);
+    }
+
+
+    useEffect(() => {
+
+        if (disableFields) {
+            return;
+        }
+
+
+        if (serviceType == 1) {
+            setDisableRecurrency(false);
+            setService([]);
+            setReleaseConfirm(false);
+           
+        }
+
+        if (serviceType === 2) {
+            
+            setRecurrency(false);
+            setDisableRecurrency(true);
+            setService({
+                value: 1569449,
+                label: 'Rework',
+                duration: 30,
+            });
+        }
+
+
+        if (serviceType === 3) {
+            setRecurrency(false);
+            setDisableRecurrency(true);
+            setService([]);
+        }
+
+        if(fullServices.length > 0) {
+            updateServices();
+        }
+
+
+
+    }, [serviceType])
 
 
     useEffect(() => {
@@ -169,12 +271,14 @@ export default function ModalAddSchedule(props: Iprops) {
             let dayWeek = props.currentCard.date.getDay();
 
             setDayOfWeek(dayWeek);
-            
+
         }
 
         if (!props.currentCard?.SAS_SCHEDULE_ID) {
             return;
         }
+
+        setFirstOpenning(true);
 
 
         if (props?.currentCard?.SAS_SCHEDULE_STATUS === 'Skip') {
@@ -190,11 +294,9 @@ export default function ModalAddSchedule(props: Iprops) {
         setRecurrency(false);
         setDisableRecurrency(true);
         setStartDate(props.currentCard.date.toISOString().split("T")[0]);
-        setDisableFields(true)
+        setDisableFields(true);
 
-        calculateStartTime(props.currentCard.SAS_SCHEDULE_HRINICIO)
-
-
+        calculateStartTime(props.currentCard.SAS_SCHEDULE_HRINICIO);
 
     }, []);
 
@@ -298,6 +400,8 @@ export default function ModalAddSchedule(props: Iprops) {
         ServiceDetailsService
             .getAll()
             .then(services => {
+
+                setFullServices(services.consulta);
                 let serv =
                     services.consulta.map(s => ({
                         value: s.WC_PRODUTO_COD,
@@ -305,8 +409,12 @@ export default function ModalAddSchedule(props: Iprops) {
                         duration: s.SAS_SERVICE_DURACAO
                     }));
 
-                setServiceDetails(serv);
+                //setServiceDetails(serv);
 
+
+                updateServices(services.consulta);
+                
+                
                 if (props.currentCard?.WC_PRODUTO_COD && !skip) {
                     let sv = serv.find(s => s.value === props.currentCard?.WC_PRODUTO_COD);
                     setService(sv);
@@ -315,9 +423,8 @@ export default function ModalAddSchedule(props: Iprops) {
             })
     }, [])
 
-
     useEffect(() => {
-        getTeam()
+        getTeam();
     }, [])
 
     function handleInputChange(value: { value: string; label: string; } | null) {
@@ -373,7 +480,9 @@ export default function ModalAddSchedule(props: Iprops) {
 
         setSavingSchedule(true);
 
-        if (recurringDates.some((dt: any) => dt?.procedure?.DISPONIBILIDADE === 'NOK')) {
+        let conflict = recurringDates.some((dt: any) => dt?.procedure?.some((p: any) => p.DISPONIBILIDADE === 'NOK'));
+
+        if (conflict && serviceType === 1) {
             alert('Error! Schedule Conflict.');
             return;
         }
@@ -409,11 +518,16 @@ export default function ModalAddSchedule(props: Iprops) {
                         SAS_SCHEDULE_WEEK_DAY: recurrency ? `${dayOfWeek}` : ''
                     }
 
+                    verifySkip(schedule);
+
                     scheduleArray.push(schedule);
 
                 })
 
                 let tipo = props.currentCard?.SAS_SCHEDULE_ID ? 'ALTERAR' : 'INCLUIR';
+
+
+
 
                 ScheduleService.saveBatch(scheduleArray, tipo).then(() => {
                     props.fecharModal();
@@ -487,6 +601,8 @@ export default function ModalAddSchedule(props: Iprops) {
                     }
                     let tipo = props.currentCard?.SAS_SCHEDULE_ID ? 'ALTERAR' : 'INCLUIR';
 
+                    verifySkip(schedule);
+
                     ScheduleService.save(schedule, tipo).then(
                         retorno => {
                             props.fecharModal();
@@ -494,9 +610,50 @@ export default function ModalAddSchedule(props: Iprops) {
                     )
                 })
             }
+        } else if (serviceType === 2 || serviceType === 3 ) {
+
+            let endHour = calculateEndHour(startTime, service.duration)
+
+
+            let schedule: ScheduleModel = {
+                WC_CLIENTE_COD: client.value,
+                SAS_EQUIPE_ID: selectedTeam.value,
+                SAS_SCHEDULE_DATA: startDate.split('-').reverse().join('/'),
+                SAS_SCHEDULE_HRFIM: endHour,
+                SAS_SCHEDULE_HRINICIO: startTimeForRework[startTime],
+                SAS_SCHEDULE_ID: props.currentCard?.SAS_SCHEDULE_ID ? props.currentCard?.SAS_SCHEDULE_ID : uuidv4(),
+                SAS_SCHEDULE_STATUS: 'ATIVO',
+                SAS_EQUIPE_INICIAL_ID: selectedTeam.value,
+                WC_PRODUTO_COD: service.value,
+                SAS_SINALIZADOR: serviceType === 2 ? 'rework' : 'extra cleaning',
+                SAS_SCHEDULE_OBSERVA: comments,
+                SAS_PROP_ID: property.value,
+                WF_OPORTUNI_ID: props?.oportuniId || '',
+                SAS_SCHEDULE_START_DATE: '',
+                SAS_SCHEDULE_END_DATE: '',
+                SAS_SCHEDULE_EVERY: '',
+                SAS_SCHEDULE_FREQUENCY: '',
+                SAS_SCHEDULE_WEEK_DAY: ''
+            }
+
+            ScheduleService.save(schedule, 'INCLUIR').then(
+                retorno => {
+                    props.fecharModal();
+                }
+            )
+
         }
     }
 
+
+    async function verifySkip(schedule: ScheduleModel) {
+
+        let spot: ScheduleModel[] = await ScheduleService.getSpot(schedule);
+
+        if (spot.length > 0 && spot[0].SAS_SCHEDULE_STATUS === 'Skip') {
+            ScheduleService.delete(spot[0].SAS_SCHEDULE_ID);
+        }
+    }
 
     function handleService(data: any) {
         setService(data)
@@ -603,8 +760,11 @@ export default function ModalAddSchedule(props: Iprops) {
         await Promise.all(dates.map(async (dtObj: any, index: number) => {
 
             let scheduleStats: ScheduleProcedureModel[] = await QueryExec.exec(`EXECUTE [dbo].[scheduler_builder_tester] '${service.value}','${selectedTeam.value}','${formatDate(dtObj.date)}','${time}'`);
+
+            console.log(scheduleStats);
+
             if (scheduleStats.length) {
-                dates[index]['procedure'] = scheduleStats[0];
+                dates[index]['procedure'] = scheduleStats;
             }
             dates[index]['time'] = time;
             dates[index]['key'] = v4();
@@ -614,7 +774,7 @@ export default function ModalAddSchedule(props: Iprops) {
         await Promise.all(dates.map(async (dtObj: any, index: number) => {
 
             let result = await QueryExec.exec(`SELECT TOP 1 * FROM SAS_SCHEDULE WHERE WC_CLIENTE_COD = ${client.value} AND SAS_SCHEDULE_DATA BETWEEN '${formatDate(dtObj.date)}' AND '${formatDate(dtObj.date)}' AND SAS_SCHEDULE_STATUS <> 'CANCELED'`);
-            
+
             if (result.length) {
                 dates[index]['note'] = "User already scheduled for this date";
             }
@@ -622,7 +782,22 @@ export default function ModalAddSchedule(props: Iprops) {
         }));
 
         if (dates.some((dt: any) => dt?.note === "User already scheduled for this date")) {
-            setShowPopoverError(true);
+
+            if (FirstOpenning) {
+                setFirstOpenning(false);
+            } else {
+
+
+
+                setPopoverProps({
+                    tipo: "Atention",
+                    titulo: "Atention!",
+                    texto: "There are already appointments registered for this client in the selected period.",
+                    fecharModal: () => { setShowPopoverError(false) }
+                })
+                setShowPopoverError(true);
+            }
+
         }
 
         setRecurringDates(dates);
@@ -695,8 +870,9 @@ export default function ModalAddSchedule(props: Iprops) {
         await Promise.all(dates.map(async (dtObj: any, index: number) => {
 
             let scheduleStats: ScheduleProcedureModel[] = await QueryExec.exec(`EXECUTE [dbo].[scheduler_builder_tester] '${service.value}','${selectedTeam.value}','${formatDate(dtObj.date)}','${time}'`);
+            console.log(scheduleStats);
             if (scheduleStats.length) {
-                dates[index]['procedure'] = scheduleStats[0];
+                dates[index]['procedure'] = scheduleStats;
             }
             dates[index]['time'] = time;
         }))
@@ -704,7 +880,7 @@ export default function ModalAddSchedule(props: Iprops) {
         await Promise.all(dates.map(async (dtObj: any, index: number) => {
 
             let result = await QueryExec.exec(`SELECT TOP 1 * FROM SAS_SCHEDULE WHERE WC_CLIENTE_COD = ${client.value} AND SAS_SCHEDULE_DATA BETWEEN '${formatDate(dtObj.date)}' AND '${formatDate(dtObj.date)}' AND SAS_SCHEDULE_STATUS <> 'CANCELED'`);
-            
+
             if (result.length) {
                 dates[index]['note'] = "User already scheduled for this date";
             }
@@ -763,10 +939,56 @@ export default function ModalAddSchedule(props: Iprops) {
 
     function searchService() {
 
+
+
+        let { SAS_SCHEDULE_VLDT_END, SAS_SCHEDULE_VLDT_INI } = validDates;
+
         setRecurringDates([]);
 
 
         if (recurrency) {
+
+
+            if (SAS_SCHEDULE_VLDT_END && SAS_SCHEDULE_VLDT_INI) {
+
+
+                let startDateStr = SAS_SCHEDULE_VLDT_INI.split('/').reverse().join('-');
+                let startDateValid = new Date(startDateStr);
+
+                let endDateStr = SAS_SCHEDULE_VLDT_END.split('/').reverse().join('-');
+                let endDateValid = new Date(endDateStr);
+
+
+                if (startDateValid > endDateValid) {
+
+                    setPopoverProps({
+                        tipo: "Atention",
+                        titulo: "Atention!",
+                        texto: "Incorrect períod, verify selected dates.",
+                        fecharModal: () => { setShowPopoverError(false) }
+                    })
+                    setShowPopoverError(true);
+                    return;
+                }
+
+
+
+                let selectedStartDate = new Date(startDate)
+                let selectedEndDate = new Date(endDate)
+
+                if (selectedStartDate < startDateValid) {
+                    return;
+                }
+
+                if (selectedEndDate > endDateValid) {
+                    return;
+                }
+
+            }
+
+
+
+
             if (!(client?.value && property?.value && selectedTeam?.value && service?.value && startDate && endDate && startTime && every && frequency && Number.isInteger(dayOfWeek))) {
                 return;
             }
@@ -775,9 +997,26 @@ export default function ModalAddSchedule(props: Iprops) {
             createArrayOptionsDate();
         } else {
 
+
+            console.log(client?.value, property?.value, selectedTeam?.value, service?.value, startDate, startTime)
+
             if (!(client?.value && property?.value && selectedTeam?.value && service?.value && startDate && startTime)) {
                 return;
             }
+
+            if (serviceType === 2) {
+
+                if(comments.trim() > '') {
+                    setReleaseConfirm(true);
+                }
+                return;
+            }
+
+            if (serviceType === 3) {
+                setReleaseConfirm(true);
+                return;
+            }
+
             createOptionDate()
         }
     }
@@ -793,6 +1032,19 @@ export default function ModalAddSchedule(props: Iprops) {
 
     function handleTextarea(event: ChangeEvent<HTMLTextAreaElement>) {
         setComments(event.target.value);
+    }
+
+    function handleInputDate(date: string, type: string) {
+
+        if (type === 'start') {
+            setStartDate(date);
+        } else {
+            setEndDate(date)
+        }
+    }
+
+    function handleRadio(event: ChangeEvent<HTMLInputElement>) {
+        setServiceType(parseInt(event.target.value));
     }
 
     return (
@@ -825,14 +1077,42 @@ export default function ModalAddSchedule(props: Iprops) {
                             </div>
                             :
                             <>
-                                <Select
-                                    required
-                                    isDisabled={disableFields}
-                                    value={service}
-                                    className={styles.select}
-                                    placeholder='Service'
-                                    onChange={handleService}
-                                    options={serviceDetails} />
+
+
+                                <div className={styles.optionsRadio}>
+
+                                    <div>
+                                        <input type="radio" name="typeService" onChange={(event: any) => setServiceType(parseInt(event.target.value))} value="1" checked={serviceType === 1} />
+                                        <label>Job</label>
+                                    </div>
+                                    <div>
+                                        <input type="radio" name="typeService" onChange={(event: any) => setServiceType(parseInt(event.target.value))} value="2" checked={serviceType === 2} />
+                                        <label>Rework</label>
+
+                                    </div>
+                                    <div>
+                                        <input type="radio" name="typeService" onChange={(event: any) => setServiceType(parseInt(event.target.value))} value="3" checked={serviceType === 3} />
+                                        <label>Extra Cleaning</label>
+
+                                    </div>
+
+
+                                </div>
+
+                                {
+                                    serviceType !== 2 &&
+
+                                    <Select
+                                        required
+                                        isDisabled={disableFields}
+                                        value={service}
+                                        className={styles.select}
+                                        placeholder='Service'
+                                        onChange={handleService}
+                                        options={serviceDetails} />
+
+                                }
+
 
 
                                 {/* <Select
@@ -879,22 +1159,22 @@ export default function ModalAddSchedule(props: Iprops) {
                                 <div className={recurrency ? styles.recurrenceItens : styles.oneDate}>
                                     <div className={styles.inputContainer}>
                                         <span>{recurrency ? 'Start Date' : 'Date'}</span>
-                                        <input type="date" value={startDate} name='StartDate' onChange={(event) => setStartDate(event.target.value)} />
+                                        <input type="date" value={startDate} name='StartDate' onChange={(event) => handleInputDate(event.target.value, 'start')} />
                                     </div>
                                     {recurrency &&
                                         <>
                                             <div className={styles.inputContainer}>
                                                 <span>End Date</span>
-                                                <input type="date" value={endDate} name='EndDate' onChange={(event) => setEndDate(event.target.value)} />
+                                                <input type="date" value={endDate} name='EndDate' onChange={(event) => handleInputDate(event.target.value, 'end')} />
                                             </div>
                                             <div className={styles.shortcutYers}>
                                                 {
                                                     loading ?
-                                                    <div className={styles.loadingScreen} style={{ display: "inline" }}>
-                                                        <ImSpinner9 color='#008461' size={20}></ImSpinner9>
-                                                    </div>
-                                                :
-                                                    <BiPlusCircle size={20} onClick={() => addYears(1)}></BiPlusCircle>
+                                                        <div className={styles.loadingScreen} style={{ display: "inline" }}>
+                                                            <ImSpinner9 color='#008461' size={20}></ImSpinner9>
+                                                        </div>
+                                                        :
+                                                        <BiPlusCircle size={20} onClick={() => addYears(1)}></BiPlusCircle>
                                                 }
                                             </div>
                                         </>
@@ -902,7 +1182,7 @@ export default function ModalAddSchedule(props: Iprops) {
                                     <div className={styles.inputContainer}>
                                         <span>Start Time</span>
                                         <select value={startTime} name='StartTime' onChange={(event) => setStartTime(event.target.value)}>
-                                            <option value="08:30am">08:30am</option>
+                                            <option value="8:30am">8:30am</option>
                                             <option value="10:00am">10:00am</option>
                                             <option value="11:30am">11:30am</option>
                                             <option value="1:00pm">1:00pm</option>
@@ -962,7 +1242,7 @@ export default function ModalAddSchedule(props: Iprops) {
 
                                 <div className={styles.textAreaContainer}>
                                     <div className={styles.textAreaTitle}>
-                                        <h3>This Schedule Comments</h3>
+                                        <h3>This Schedule Comments { serviceType === 2 && <small style={{color: '#940000', fontSize: 12}}>*required</small>}</h3>
                                         <div onClick={() => setToggleTextarea(!toggleTextarea)}>
                                             {toggleTextarea ? <HiOutlineChevronUp /> : < HiOutlineChevronDown />}
                                         </div>
@@ -988,11 +1268,11 @@ export default function ModalAddSchedule(props: Iprops) {
 
                                                     {
                                                         recurringDates.map((rd: any) => (
-                                                            <tr className={rd?.procedure?.DISPONIBILIDADE === 'NOK' ? styles.unavailable : ''} key={rd.key}>
+                                                            <tr className={rd?.procedure?.some((p: any) => p.DISPONIBILIDADE === 'NOK') ? styles.unavailable : ''} key={rd.key}>
                                                                 <td>{rd.date.toLocaleString('en-US', { day: 'numeric', month: 'numeric', year: 'numeric' })}</td>
                                                                 <td>{startTime}</td>
                                                                 {/* <td>{rd?.note}</td> */}
-                                                                <td>{rd?.procedure?.DISPONIBILIDADE === 'NOK' ? <HiXCircle size="20" color="#b32f3a"></HiXCircle> : <HiCheckCircle size="20" color="#01c293"></HiCheckCircle>}</td>
+                                                                <td>{rd?.procedure?.some((p: any) => p.DISPONIBILIDADE === 'NOK') ? <HiXCircle size="20" color="#b32f3a"></HiXCircle> : <HiCheckCircle size="20" color="#01c293"></HiCheckCircle>}</td>
                                                             </tr>
                                                         ))
                                                     }
@@ -1002,7 +1282,8 @@ export default function ModalAddSchedule(props: Iprops) {
 
                                         :
 
-
+                                                
+                                        serviceType === 1 &&
                                         <div className={styles.instructionSelectDate}>
                                             <p>Select the property and service to check a available date & time</p>
                                             {
@@ -1020,7 +1301,7 @@ export default function ModalAddSchedule(props: Iprops) {
 
 
                                 <div className={styles.modalAction}>
-                                    <button disabled={!recurringDates?.length || savingSchedule} className={`${styles.btnAction} btn btn-confirm`}>Confirm Schedule &nbsp;
+                                    <button disabled={(!recurringDates?.length || savingSchedule) && !releaseConfirm} className={`${styles.btnAction} btn btn-confirm`}>Confirm Schedule &nbsp;
 
                                         {savingSchedule ?
 
