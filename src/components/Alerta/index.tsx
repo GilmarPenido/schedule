@@ -9,6 +9,8 @@ interface Iprops{
     tipo: string
     titulo: string
     texto: string
+    heigth?: string| undefined;
+    width?: string| undefined;
 }
 
 
@@ -18,7 +20,7 @@ export default function Alerta(props: Iprops) {
     return (
         <div className="container-alerta">
 
-            <div className="modal-alerta">
+            <div className="modal-alerta" style={ props.heigth ? { height: props.heigth, width: props.width} : {} }>
 
                 <div className="corpo-alerta">
                         {
@@ -27,12 +29,25 @@ export default function Alerta(props: Iprops) {
                                 <img src={checked} alt="checked"/>
                                 <h1 className="">Sucesso!</h1>
                             </div>
+
+                            :
+
+                            props.tipo === 'notAuthorized' ?
+                            
+                            <>
+                            <div className="modal-warning" style={{ width:'40%', position: 'absolute'}}>
+                                <img src={errorAlert} alt="checked"/>
+                                
+                            </div>
+                            <div style={{height: '28px'}}></div>
+                            </>
                             :
 
                             <div className="modal-erro">
                                 <img src={errorAlert} alt="checked"/>
                                 <h1 className="">Erro!</h1>
                             </div>
+                        
 
                         }
 

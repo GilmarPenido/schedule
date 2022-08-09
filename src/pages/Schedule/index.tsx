@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, lazy } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { FaDotCircle, FaExchangeAlt, FaFilter, FaRegWindowClose } from "react-icons/fa";
 import { IoIosCodeWorking } from "react-icons/io"; 
 import { ImArrowLeft, ImArrowRight } from "react-icons/im";
@@ -26,11 +26,14 @@ import ModalEditSchedule from "../../components/ModalEditSchedule";
 import ModalConfirmSkip from "../../components/ModalConfirmSkip";
 import ChangeTeamService from "../../services/change-team";
 import ChangeTeamModel from "../../Models/change-team";
-import { v4 as uuidv4, v4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import ModalViewSchedule from "../../components/ModalViewSchedule";
 import ModalAddNote from "../../components/ModalAddNote";
 import ModalChangeTeam from "../../components/ModalChangeTeam";
 import { BsBookmarkPlus } from "react-icons/bs";
+import { CgDanger } from "react-icons/cg";
+import ScheduleHoursValid from "../../services/shcedule-hours";
+import Alerta from "../../components/Alerta";
 
 
 const days = 7;
@@ -40,7 +43,7 @@ export default function Schedule(props: any) {
 
     const filterWidth = 300;
 
-    const [jobHours] = useState([
+    const [jobHours, setJobHours] = useState([
         '8:30am',
         '10:00am',
         '11:30am',
@@ -48,6 +51,8 @@ export default function Schedule(props: any) {
         '2:30pm',
         '3:30pm'
     ]);
+
+    const [conflicstAuthorized, setConflicstAuthorized] = useState(false);
 
     const [oportuniID, setOportuniID] = useState(0);
 
@@ -90,6 +95,8 @@ export default function Schedule(props: any) {
     const [openModalView, setOpenModalView] = useState(false);
     const [openModalAddNote, setOpenModalAddNote] = useState(false);
     const [openModalChangeTeam, setOpenModalChangeTeam] = useState(false);
+
+    const [openAlerta, setOpenAlerta] = useState(false);
 
     const [modalConfirmText, setModalConfirmText] = useState('');
     const [modalConfirmTitle, setModalConfirmTitle] = useState('');
@@ -238,7 +245,17 @@ export default function Schedule(props: any) {
         setWindowWidthSize(window.innerWidth);
     }
 
+    async function getValidHours() {
+        let validHours = await ScheduleHoursValid.getAll();
+        let authorized = await QueryExec.authorized();
+        setConflicstAuthorized(authorized);
+        setJobHours(validHours);
+    }
+
     useEffect(() => {
+
+
+        getValidHours();
 
         let oportuniPropId = props.location.search.match(/(?<=oportuniId=)\d*/i);
 
@@ -253,7 +270,7 @@ export default function Schedule(props: any) {
         getTeams();
         let date = new Date();
         setSelectedMonth(date.getMonth());
-        console.log(date.getMonth());
+        //console.log(date.getMonth());
         setSelectedYear(date.getFullYear());
         browseWeek(date.getDate(), date.getMonth(), date.getFullYear());
     }, [])
@@ -396,9 +413,9 @@ export default function Schedule(props: any) {
                 let scheduleData: any = []
                 if (!schedule) return;
 
-                schedule.reverse().map((sche: ScheduleFullModel) => {
+                schedule.map((sche: ScheduleFullModel) => {
 
-                    let reworkHours = ['8:35am', '10:05am', '11:35am','1:05pm', '2:35pm', '3:35pm']
+                    let reworkHours = ['8:35am', '10:05am', '11:35am','1:05pm', '2:35pm', '3:35pm'];
 
                     if (!scheduleData[sche.SAS_SCHEDULE_DATA]) {
                         scheduleData[sche.SAS_SCHEDULE_DATA] = [];
@@ -413,11 +430,40 @@ export default function Schedule(props: any) {
 
                     if(reworkHours.includes(sche.SAS_SCHEDULE_HRINICIO)) {
 
+                        if (!scheduleData[sche.SAS_SCHEDULE_DATA][sche.SAS_EQUIPE_ID][sche.SAS_SCHEDULE_HRINICIO]) {
+                            scheduleData[sche.SAS_SCHEDULE_DATA][sche.SAS_EQUIPE_ID][sche.SAS_SCHEDULE_HRINICIO] = [];
+
+                        }
+
                         scheduleData[sche.SAS_SCHEDULE_DATA][sche.SAS_EQUIPE_ID][sche.SAS_SCHEDULE_HRINICIO].push(sche);
 
                     } else {
 
-                        scheduleData[sche.SAS_SCHEDULE_DATA][sche.SAS_EQUIPE_ID][sche.SAS_SCHEDULE_HRINICIO] = sche
+                        if(scheduleData[sche.SAS_SCHEDULE_DATA][sche.SAS_EQUIPE_ID][sche.SAS_SCHEDULE_HRINICIO] === 'skiphour') { 
+
+                            return;
+                        }
+
+
+                        if(scheduleData[sche.SAS_SCHEDULE_DATA][sche.SAS_EQUIPE_ID][sche.SAS_SCHEDULE_HRINICIO]?.SAS_SCHEDULE_ID) {
+                            if (sche.SAS_SCHEDULE_STATUS === 'Skip') {
+                                return true;
+                            }
+                        }
+                        
+                        scheduleData[sche.SAS_SCHEDULE_DATA][sche.SAS_EQUIPE_ID][sche.SAS_SCHEDULE_HRINICIO].push({...sche, 'size': 1 })
+                    }
+
+                    let length = scheduleData[sche.SAS_SCHEDULE_DATA][sche.SAS_EQUIPE_ID][sche.SAS_SCHEDULE_HRINICIO].length;
+
+  
+                    
+                    if(length > 1) {
+                        let indice = scheduleData[sche.SAS_SCHEDULE_DATA][sche.SAS_EQUIPE_ID][sche.SAS_SCHEDULE_HRINICIO].findIndex( (n: any) => n.SAS_SCHEDULE_STATUS === 'Skip')
+                        console.log(indice);
+                        if(indice !== -1) {
+                            scheduleData[sche.SAS_SCHEDULE_DATA][sche.SAS_EQUIPE_ID][sche.SAS_SCHEDULE_HRINICIO].splice(indice, 1);
+                        }
                     }
 
 
@@ -426,7 +472,7 @@ export default function Schedule(props: any) {
                     }
 
                     let index = jobHours.indexOf(sche.SAS_SCHEDULE_HRINICIO)
-                    scheduleData[sche.SAS_SCHEDULE_DATA][sche.SAS_EQUIPE_ID][sche.SAS_SCHEDULE_HRINICIO]['size'] = 1
+                    scheduleData[sche.SAS_SCHEDULE_DATA][sche.SAS_EQUIPE_ID][sche.SAS_SCHEDULE_HRINICIO][0]['size'] = 1
 
                     for (let i = index + 1; i < 6; i++) {
 
@@ -448,9 +494,9 @@ export default function Schedule(props: any) {
                             break;
                         }
 
-                        scheduleData[sche.SAS_SCHEDULE_DATA][sche.SAS_EQUIPE_ID][sche.SAS_SCHEDULE_HRINICIO]['size']++;
+                        scheduleData[sche.SAS_SCHEDULE_DATA][sche.SAS_EQUIPE_ID][sche.SAS_SCHEDULE_HRINICIO][0]['size']++;
 
-                        scheduleData[sche.SAS_SCHEDULE_DATA][sche.SAS_EQUIPE_ID][nextHour] = 'skiphour'
+                        scheduleData[sche.SAS_SCHEDULE_DATA][sche.SAS_EQUIPE_ID][nextHour] = 'skiphour';
                     }
                 });
 
@@ -609,9 +655,17 @@ export default function Schedule(props: any) {
 
     }
 
-    function handleContextMenu(event: any, sche: ScheduleModel | null, team: any, dt: Date) {
-
+    function handleContextMenu(event: any, sche: ScheduleFullModel | null, team: any, dt: Date, conflict: boolean = false) {
+        
+        event.preventDefault();
+        
         if (sche === null) return;
+
+
+        if ( conflict && !conflicstAuthorized) {
+            setOpenAlerta(true);
+            return;
+        }
 
         setCurrentCard({
             team,
@@ -826,7 +880,7 @@ export default function Schedule(props: any) {
         date.setHours(hrIni);
         date.setMinutes(minIni + tolerance);
 
-        return date
+        return date;
 
     }
 
@@ -889,6 +943,7 @@ export default function Schedule(props: any) {
     function openView(event: any, sche: ScheduleModel | null, team: any, dt: Date) {
 
         if (sche === null) return;
+
 
         setCurrentCard({
             team,
@@ -1116,6 +1171,18 @@ export default function Schedule(props: any) {
                                 />
                             } */}
 
+                            {
+                                openAlerta &&
+                                <Alerta
+                                    texto="This operation is not allowed for the logged user."
+                                    titulo="Not Authorized!"
+                                    tipo="notAuthorized"
+                                    heigth="90px"
+                                    width="450px"
+                                    fecharModal={ () => setOpenAlerta(false)}
+                                ></Alerta>
+                            }
+
                             <div className={styles.scheduleContainer}>
                                 <div className={styles.fixedHeader} style={{ width: `100%` }}>
                                     <div className={styles.rowAction}>
@@ -1129,7 +1196,7 @@ export default function Schedule(props: any) {
 
                                         <div onClick={() => window.history.back()}>
                                             <FaRegWindowClose />
-                                            <span><b>Schedule V1.05
+                                            <span><b>Schedule V1.08
                                             </b></span>
                                         </div>
                                     </div>
@@ -1177,24 +1244,24 @@ export default function Schedule(props: any) {
 
                                                                         {
 
-
                                                                             jobHours.map((hr: any, indexHours) => {
 
                                                                                 let data = dt.toLocaleString('pt-BR', { dateStyle: 'short' })
                                                                                 let equipeId = team.SAS_EQUIPE_ID
                                                                                 let sche: ScheduleFullModel | any = null
+                                                                                let scheList: ScheduleFullModel[] = []
                                                                                 let scheReworkList: Array<ScheduleFullModel> | null = null
 
                                                                                 if (scheduleMap[data] &&
                                                                                     scheduleMap[data][equipeId] &&
                                                                                     scheduleMap[data][equipeId][hr]) {
 
-                                                                                    sche = scheduleMap[data][equipeId][hr];
-                                                                                    if (sche === 'skiphour') {
+                                                                                    if (scheduleMap[data][equipeId][hr] === 'skiphour') {
                                                                                         return true;
                                                                                     }
 
-
+                                                                                    scheList = scheduleMap[data][equipeId][hr];
+                                                                                    sche = scheduleMap[data][equipeId][hr][0];
 
                                                                                 }
 
@@ -1205,65 +1272,74 @@ export default function Schedule(props: any) {
                                                                                     scheReworkList = scheduleMap[data][equipeId][startTimeForRework[hr]]
                                                                                 }
 
-
                                                                                 return (
 
                                                                                     <div key={`${indexTeam}${indexDates}${indexHours}`}>
                                                                                         {
 
                                                                                             sche && sche.SAS_SCHEDULE_STATUS !== 'Skip' ?
-                                                                                                <div
-                                                                                                    key={`${indexTeam}${indexDates}${indexHours}`}
-                                                                                                    onContextMenu={(event) => handleContextMenu(event, sche, team, dt)}
-                                                                                                    onClick={(event) => {
-                                                                                                        openView(event, sche, team, dt);
-                                                                                                    }}
-                                                                                                    draggable="true"
-                                                                                                    onDragStart={(e) => startDrag(e, sche)}
-                                                                                                    className={styles.serviceCard}
-                                                                                                    style={{
-                                                                                                        border: `2px solid ${lineColor(sche, team)}`,
-                                                                                                        backgroundColor: teamsMapColor[sche.SAS_EQUIPE_INICIAL_ID] || team.SAS_EQUIPE_COR,
-                                                                                                        textDecoration: sche.SAS_SERVICE_UNDERLINE === 'Yes' ? 'underline' : 'normal',
-                                                                                                        color: sche.SAS_SERVICE_TEXT_COLOR,
-                                                                                                        height: sche.size * 20,
-                                                                                                        paddingLeft: sche.size > 1 ? 6 : ''
-                                                                                                    }} >
-                                                                                                    <span>
-                                                                                                        <b style={sche.size > 1 ? { borderRadius: 12, border: `1px solid ${lineColor(sche, team)}` } : {}}>{indexHours + 1}</b>{sche.SAS_CLI_NOME_COMPLETO.substr(0, dropNumberCaracterName)}
-                                                                                                    </span>
-                                                                                                    <div className={styles.iconsContainer}>
-                                                                                                        {
 
-                                                                                                            sche.SAS_SERVICE_FLAG === '' ?
-                                                                                                                (
-                                                                                                                    <>
-                                                                                                                        {sche.SAS_SINALIZADOR === 'recurrency' &&
-                                                                                                                            <AiFillTrademarkCircle size={'14px'}></AiFillTrademarkCircle>}
+                                                                                                scheList.map( (sche: any, k) => (
+                                                                                                    <div
+                                                                                                        key={`${indexTeam}${indexDates}${indexHours}${k}`}
+                                                                                                        onContextMenu={(event) => handleContextMenu(event, sche, team, dt, scheList.length > 1)}
+                                                                                                        onClick={(event) => {
+                                                                                                            openView(event, sche, team, dt);
+                                                                                                        }}
+                                                                                                        draggable={ (scheList.length > 1 && !conflicstAuthorized)  ? false : true }
+                                                                                                        onDragStart={(e) => startDrag(e, sche)}
+                                                                                                        className={styles.serviceCard}
+                                                                                                        style={{
+                                                                                                            border: `2px solid ${lineColor(sche, team)}`,
+                                                                                                            backgroundColor:  teamsMapColor[sche.SAS_EQUIPE_INICIAL_ID] || team.SAS_EQUIPE_COR,
+                                                                                                            textDecoration: sche.SAS_SERVICE_UNDERLINE === 'Yes' ? 'underline' : 'normal',
+                                                                                                            color: scheList.length > 1? '#990000' : sche.SAS_SERVICE_TEXT_COLOR,
+                                                                                                            height: sche.size * 20 +  (sche.size - 1) * 5,
+                                                                                                            paddingLeft: sche.size > 1 ? 6 : ''
+                                                                                                        }} >
+                                                                                                        <span>
+                                                                                                            <b  style={ sche.size > 1 ? { borderRadius: 12, border: `1px solid ${lineColor(sche, team)}` } : {}}>{indexHours + 1}</b>{sche.SAS_CLI_NOME_COMPLETO.substr(0, dropNumberCaracterName)}
+                                                                                                        </span>
+                                                                                                        <div className={styles.iconsContainer}>
+                                                                                                            {
 
-                                                                                                                        {sche.SAS_SINALIZADOR === 'moved' &&
-                                                                                                                            <FaExchangeAlt size={'14px'}></FaExchangeAlt>}
+                                                                                                                sche.SAS_SERVICE_FLAG === '' ?
+                                                                                                                    (
+                                                                                                                        <>
+                                                                                                                            {sche.SAS_SINALIZADOR === 'recurrency' &&
+                                                                                                                                <AiFillTrademarkCircle size={'14px'}></AiFillTrademarkCircle>}
 
-                                                                                                                        {sche.SAS_SINALIZADOR === '' &&
-                                                                                                                            <AiFillMediumCircle size={'14px'}></AiFillMediumCircle>}
-                                                                                                                    </>
-                                                                                                                ) : (
-                                                                                                                    <span className={styles.flagCustom}>{sche.SAS_SERVICE_FLAG}</span>
+                                                                                                                            {sche.SAS_SINALIZADOR === 'moved' &&
+                                                                                                                                <FaExchangeAlt size={'14px'}></FaExchangeAlt>}
 
-                                                                                                                )
-                                                                                                        }
+                                                                                                                            {sche.SAS_SINALIZADOR === '' &&
+                                                                                                                                <AiFillMediumCircle size={'14px'}></AiFillMediumCircle>}
+                                                                                                                        </>
+                                                                                                                    ) : (
+                                                                                                                        <span className={styles.flagCustom}>{sche.SAS_SERVICE_FLAG}</span>
+
+                                                                                                                    )
+                                                                                                            }
 
 
-                                                                                                        {sche.SAS_SCHEDULE_OBSERVA !== '' &&
-                                                                                                            <IoMail size={'14px'} onMouseOver={(event) => {
-                                                                                                                let message = `skiped on ${dt.toLocaleString('en-US', { dateStyle: 'short' })} <br> client ${sche.SAS_CLI_NOME_COMPLETO} <br> ${sche?.SAS_SCHEDULE_OBSERVA}`;
-                                                                                                                openMessagePopover(event, message)
-                                                                                                            }}></IoMail>
-                                                                                                        }
-                                                                                                        <span>{sche.SAS_SCHEDULE_HRINICIO} </span>
+                                                                                                            {sche.SAS_SCHEDULE_OBSERVA !== '' &&
+                                                                                                                <IoMail size={'14px'} onMouseOver={(event) => {
+                                                                                                                    let message = `skiped on ${dt.toLocaleString('en-US', { dateStyle: 'short' })} <br> client ${sche.SAS_CLI_NOME_COMPLETO} <br> ${sche?.SAS_SCHEDULE_OBSERVA}`;
+                                                                                                                    openMessagePopover(event, message)
+                                                                                                                }}></IoMail>
+                                                                                                            }
+
+
+                                                                                                            {
+                                                                                                                scheList.length > 1 &&
+                                                                                                                <CgDanger size={'14px'} color="#990000"></CgDanger>
+                                                                                                            }
+                                                                                                            <span>{sche.SAS_SCHEDULE_HRINICIO} </span>
+                                                                                                        </div>
+
                                                                                                     </div>
 
-                                                                                                </div>
+                                                                                                ))
 
                                                                                                 :
                                                                                                 <div

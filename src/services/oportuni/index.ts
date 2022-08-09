@@ -8,8 +8,8 @@ const PROCESS = 'WF_OPORTUNI';
 const OportuniService = {
 
     getByLead: async (solContId: string, navpage: number = 0, maxreg: number = 1000) => {
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
 
         let url = `api?type=data&processo=${PROCESS}&filbrw=WF_OPORTUNI_ID=(${solContId})&navpage=${navpage}&maxreg=${maxreg}&pesqui=&format=json&usr=${usr}&psw=${psw}`;
 

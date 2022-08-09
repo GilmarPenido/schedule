@@ -10,8 +10,8 @@ const ClientService = {
 
     update: (client: ClientModel, tipo: string = 'ALTERAR') => {
 
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
 
         let url = `api/transaction/?processo=${PROCESS}` +
             `&opcao=${tipo}` +
@@ -41,8 +41,8 @@ const ClientService = {
     },
 
     delete: (WC_CLIENTE_COD: string) => {
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
 
         let url = `api/transaction/?processo=${PROCESS}` +
             `&opcao=EXCLUIR` +
@@ -60,8 +60,8 @@ const ClientService = {
 
 
     getByCode: async (code:string, navpage: number = 0, maxreg: number = 1000) => {
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
         let page = 'webpages/v1/webdebug.do?pageid=clients'; 
         let url = `api?type=data&processo=${PROCESS}&filbrw=WC_CLIENTE_COD=${code}&navpage=${navpage}&maxreg=${maxreg}&pesqui=&format=json&usr=${usr}&psw=${psw}`;
 
@@ -79,8 +79,8 @@ const ClientService = {
     },
 
     getAll: async (navpage: number = 0, maxreg: number = 1000) => {
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
         let page = 'webpages/v1/webdebug.do?pageid=clients'; 
         let url = `api?type=data&processo=${PROCESS}&filbrw=null&navpage=${navpage}&maxreg=${maxreg}&pesqui=&format=json&usr=${usr}&psw=${psw}`;
 
@@ -103,8 +103,8 @@ const ClientService = {
     },
 
     get: async (name: string, navpage: number = 0, maxreg: number = 50) => {
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
         let page = 'webpages/v1/webdebug.do?pageid=clients'; 
         let url = `api?type=data&processo=${PROCESS}&filbrw=WC_GEN_RAZAO %20like%20(%25${name}%25)or SAS_CLI_SOBRENOME %20like%20(${name}%25)&navpage=${navpage}&maxreg=${maxreg}&pesqui=&format=json&usr=${usr}&psw=${psw}`;
 

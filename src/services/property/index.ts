@@ -12,8 +12,8 @@ const PropertyService = {
 
     save: (id: string, property: PropertyModel, tipo: string = 'INCLUIR') => {
 
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
 
         let url = `api/transaction/?processo=${PROCESS}` +
             `&opcao=${tipo}` +
@@ -40,8 +40,8 @@ const PropertyService = {
     },
 
     delete: (SAS_CLI_ID: string) => {
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
 
         let url = `api/transaction/?processo=${PROCESS}` +
             `&opcao=EXCLUIR` +
@@ -59,8 +59,8 @@ const PropertyService = {
 
 
     getAll: async (navpage: number = 0, maxreg: number = 1000) => {
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
 
         let url = `api?type=data&processo=${PROCESS}&filbrw=null&navpage=${navpage}&maxreg=${maxreg}&pesqui=&format=json&usr=${usr}&psw=${psw}`;
 
@@ -83,8 +83,8 @@ const PropertyService = {
     },
 
     getById: async (SAS_PROP_ID: string, navpage: number = 0, maxreg: number = 1000) => {
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
 
         let url = `api?type=data&processo=${PROCESS}&filbrw=SAS_PROP_ID=${SAS_PROP_ID}&navpage=${navpage}&maxreg=${maxreg}&pesqui=&format=json&usr=${usr}&psw=${psw}`;
         return api.get(CONSTANTS.IP + url).then(
@@ -104,8 +104,8 @@ const PropertyService = {
     },
 
     getByClient: async (clientId: string, navpage: number = 0, maxreg: number = 1000) => {
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
 
         let url = `api?type=data&processo=${PROCESS}&filbrw=SAS_CLI_ID=(${clientId})&navpage=${navpage}&maxreg=${maxreg}&pesqui=&format=json&usr=${usr}&psw=${psw}`;
 

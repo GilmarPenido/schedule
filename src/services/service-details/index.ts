@@ -10,8 +10,8 @@ const ServiceDetailsService= {
 
     save: async (serviceDetails: ServiceDetailsModel, tipo: string = 'INCLUIR') => {
 
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
 
         let url = `api/transaction/?processo=${PROCESSO}` +
             `&opcao=${tipo}` +
@@ -35,8 +35,8 @@ const ServiceDetailsService= {
 
 
     getAll: async (navpage: number = 0, maxreg: number = 1000) => {
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
 
         let url = `api?type=data&processo=${PROCESSO}&filbrw=WC_FAMILIA_PROD_COD=%SERVICE%&navpage=${navpage}&maxreg=${maxreg}&pesqui=&format=json&usr=${usr}&psw=${psw}`;
 

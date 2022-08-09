@@ -13,8 +13,8 @@ const PAGE_ID_DEL_BATCH = 'SCHEDULE_DEL_RECURRE';
 const ScheduleService= {
 
     update: async (id: string, team: TeamModel, dt: Date, hr:string, card: ScheduleFullModel, sinalizador: string = '', endHour: string) => {
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
 
 
         let data = dt.toLocaleString('pt-br', {dateStyle:'short'});
@@ -76,8 +76,8 @@ const ScheduleService= {
 
     save: async (schedule: ScheduleModel, tipo: string = 'INCLUIR') => {
 
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
 
         let url = `api/transaction/?processo=${PROCESSO}` +
             `&opcao=${tipo}` +
@@ -123,8 +123,8 @@ const ScheduleService= {
 
     getFilter: async (schedule: ScheduleModel, navpage: number = 0, maxreg: number = 1) => {
 
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
 
         let url = `api?type=data&processo=${PROCESSO}&filbrw=SAS_PROP_ID=(${schedule.SAS_PROP_ID}) AND WC_CLIENTE_COD=(${schedule.WC_CLIENTE_COD}) AND SAS_SCHEDULE_HRINICIO=(${schedule.SAS_SCHEDULE_HRINICIO}) AND WC_PRODUTO_COD=(${schedule.WC_PRODUTO_COD}) AND SAS_EQUIPE_ID=(${schedule.SAS_EQUIPE_ID}) AND SAS_SCHEDULE_START_DATE=${schedule.SAS_SCHEDULE_START_DATE?.split('/').reverse().join('')} AND SAS_SCHEDULE_END_DATE=${schedule.SAS_SCHEDULE_END_DATE?.split('/').reverse().join('')}&navpage=${navpage}&maxreg=${maxreg}&pesqui=&format=json&usr=${usr}&psw=${psw}`;
 
@@ -151,10 +151,10 @@ const ScheduleService= {
 
     getSpot: async (schedule: ScheduleModel, navpage: number = 0, maxreg: number = 1) => {
 
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
 
-        let url = `api?type=data&processo=${PROCESSO}&filbrw=SAS_SCHEDULE_HRINICIO=(${schedule.SAS_SCHEDULE_HRINICIO}) AND SAS_EQUIPE_ID=(${schedule.SAS_EQUIPE_ID}) AND SAS_SCHEDULE_DATE=${schedule.SAS_SCHEDULE_DATA?.split('/').reverse().join('')}&navpage=${navpage}&maxreg=${maxreg}&pesqui=&format=json&usr=${usr}&psw=${psw}`;
+        let url = `api?type=data&processo=${PROCESSO}&filbrw=SAS_SCHEDULE_HRINICIO=(${schedule.SAS_SCHEDULE_HRINICIO}) AND SAS_EQUIPE_ID=(${schedule.SAS_EQUIPE_ID}) AND SAS_SCHEDULE_DATA=${schedule.SAS_SCHEDULE_DATA?.split('/').reverse().join('')}&navpage=${navpage}&maxreg=${maxreg}&pesqui=&format=json&usr=${usr}&psw=${psw}`;
 
         return api.get(CONSTANTS.IP + url)
             .then(
@@ -178,8 +178,8 @@ const ScheduleService= {
 
 
     getAll: async (dataIni: string, dataEnd: string, navpage: number = 0, maxreg: number = 1000) => {
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
 
         let url = `api?type=data&processo=${PROCESSO}&filbrw=SAS_SCHEDULE_DATA between (${dataIni}) and (${dataEnd})&navpage=${navpage}&maxreg=${maxreg}&pesqui=&format=json&usr=${usr}&psw=${psw}`;
         
@@ -203,8 +203,8 @@ const ScheduleService= {
 
     async delete(scheduleId: string){
 
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
 
         let url = `api/transaction/?processo=${PROCESSO}` +
             `&opcao=ALTERAR` +

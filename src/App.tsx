@@ -6,7 +6,7 @@ import Routes from './routes';
 function App() {
 
   useEffect(() => {
-    console.log(window.location)
+    //console.log(window.location)
   }, [])
 
   return (

@@ -20,12 +20,11 @@ import Switch from 'react-switch';
 import { HiCheckCircle, HiOutlineChevronDown, HiOutlineChevronUp, HiXCircle } from 'react-icons/hi';
 import { ImSpinner9 } from 'react-icons/im';
 import { BiPlusCircle } from 'react-icons/bi';
-import OportuniService from '../../services/oportuni';
 import AsyncSelect from 'react-select/async';
 import { ChangeEvent } from 'react';
-import { start } from 'repl';
 import PopoverError from '../popover-error';
-import ValidDateSchedule from '../../services/valid-date-schedule';
+import ScheduleHoursValid from '../../services/shcedule-hours';
+
 
 interface Iprops {
     fecharModal: any
@@ -124,6 +123,8 @@ export default function ModalAddSchedule(props: Iprops) {
     const [loading, setLoading] = useState(false);
     const [savingSchedule, setSavingSchedule] = useState(false);
 
+    const [jobHours, setJobHours] = useState<string[]>([]);
+
     const [FirstOpenning, setFirstOpenning] = useState(false);
 
     const [validDates, setValidDates] = useState<any>({});
@@ -171,7 +172,7 @@ export default function ModalAddSchedule(props: Iprops) {
         '03:30pm': '3:35pm'
     }
 
-    useEffect(() => {
+    /* useEffect(() => {
 
         ValidDateSchedule.get().then((res: any) => {
             setValidDates(res);
@@ -181,11 +182,20 @@ export default function ModalAddSchedule(props: Iprops) {
             alert('Error to load valid dates');
         })
 
-    }, []);
+    }, []); */
+
+    async function getValidHours() {
+        let validHours = await ScheduleHoursValid.getAll();
+        setJobHours(validHours);
+    }
+
+    useEffect(() => {
+        getValidHours();
+    }, [])
 
     useEffect(() => {
 
-        console.log(loadingScreen)
+        //console.log(loadingScreen)
 
         if (!loadingScreen) {
             searchService();
@@ -477,15 +487,22 @@ export default function ModalAddSchedule(props: Iprops) {
     function save(event: any) {
         event.preventDefault();
 
+        let conflict = false;
 
-        setSavingSchedule(true);
+        if (recurrency) {
+            conflict = recurringDates.some((dt: any) => dt?.procedure?.some((p: any) => p.SAS_SINALIZADOR === "recurrency"));
+        } else {
+            conflict = recurringDates.some((dt: any) => dt?.procedure?.some((p: any) => p.DISPONIBILIDADE === 'NOK'));
+        }
 
-        let conflict = recurringDates.some((dt: any) => dt?.procedure?.some((p: any) => p.DISPONIBILIDADE === 'NOK'));
+        
 
         if (conflict && serviceType === 1) {
             alert('Error! Schedule Conflict.');
             return;
         }
+
+        setSavingSchedule(true);
 
         let scheduleArray: ScheduleModel[] = [];
 
@@ -870,7 +887,9 @@ export default function ModalAddSchedule(props: Iprops) {
         await Promise.all(dates.map(async (dtObj: any, index: number) => {
 
             let scheduleStats: ScheduleProcedureModel[] = await QueryExec.exec(`EXECUTE [dbo].[scheduler_builder_tester] '${service.value}','${selectedTeam.value}','${formatDate(dtObj.date)}','${time}'`);
-            console.log(scheduleStats);
+            
+            //console.log(scheduleStats);
+            
             if (scheduleStats.length) {
                 dates[index]['procedure'] = scheduleStats;
             }
@@ -971,8 +990,6 @@ export default function ModalAddSchedule(props: Iprops) {
                     return;
                 }
 
-
-
                 let selectedStartDate = new Date(startDate)
                 let selectedEndDate = new Date(endDate)
 
@@ -985,9 +1002,6 @@ export default function ModalAddSchedule(props: Iprops) {
                 }
 
             }
-
-
-
 
             if (!(client?.value && property?.value && selectedTeam?.value && service?.value && startDate && endDate && startTime && every && frequency && Number.isInteger(dayOfWeek))) {
                 return;
@@ -1182,12 +1196,17 @@ export default function ModalAddSchedule(props: Iprops) {
                                     <div className={styles.inputContainer}>
                                         <span>Start Time</span>
                                         <select value={startTime} name='StartTime' onChange={(event) => setStartTime(event.target.value)}>
-                                            <option value="8:30am">8:30am</option>
-                                            <option value="10:00am">10:00am</option>
+                                            {
+                                                jobHours.map((hour, i) => (
+                                                    <option value={hour} key={`${i}`} >{hour}</option>
+                                                ))
+                                            }
+                                            
+                                            {/* <option value="10:00am">10:00am</option>
                                             <option value="11:30am">11:30am</option>
                                             <option value="1:00pm">1:00pm</option>
                                             <option value="2:30pm">2:30pm</option>
-                                            <option value="3:30pm">3:30pm</option>
+                                            <option value="3:30pm">3:30pm</option> */}
                                         </select>
                                         {/* <input type="time" value={startTime} name='StartTime' onChange={(event) => setStartTime(event.target.value)}/> */}
                                     </div>

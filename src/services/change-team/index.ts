@@ -10,8 +10,8 @@ const PROCESSO = 'SAS_CHANGE_TEAM';
 const ChangeTeamService = {
 
     getAll: async (date = new Date(), teamId: number = 0, navpage: number = 0, maxreg: number = 1000) => {
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
 
         let dateWeek =  new Date(date.getTime());
 

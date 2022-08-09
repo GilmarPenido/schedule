@@ -11,8 +11,8 @@ const EmailService = {
 
     save: (id: string, email: EmailModel , tipo: string = 'INCLUIR') => {
 
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
 
         let url = `api/transaction/?processo=${PROCESS}` +
             `&opcao=${tipo}` +
@@ -33,8 +33,8 @@ const EmailService = {
     },
 
     delete: (SAS_CLI_ID: string) => {
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
 
         let url = `api/transaction/?processo=${PROCESS}` +
             `&opcao=EXCLUIR` +

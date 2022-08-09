@@ -12,8 +12,8 @@ const PAGE_ID = 'SCHEDULE_FULL';
 const ScheduleFullService= {
 
     getAllOld: async (dataIni: string, dataEnd: string, navpage: number = 0, maxreg: number = 1000) => {
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
 
         let url = `api?type=data&processo=${PROCESSO}&filbrw=SAS_SCHEDULE_DATA between (${dataIni}) and (${dataEnd})&navpage=${navpage}&maxreg=${maxreg}&pesqui=&format=json&usr=${usr}&psw=${psw}`;
         

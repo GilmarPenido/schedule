@@ -11,8 +11,8 @@ const TelephoneService = {
 
     save: (id: string, telephone: TelephoneModel ,tipo: string = 'INCLUIR') => {
 
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
 
         let url = `api/transaction/?processo=${PROCESS}` +
             `&opcao=${tipo}` +
@@ -35,8 +35,8 @@ const TelephoneService = {
     },
 
     delete: (SAS_CLI_ID: string) => {
-        let usr = 'admin';
-        let psw = 'admin';
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
 
         let url = `api/transaction/?processo=${PROCESS}` +
             `&opcao=EXCLUIR` +
