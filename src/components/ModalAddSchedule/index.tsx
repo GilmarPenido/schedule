@@ -163,27 +163,6 @@ export default function ModalAddSchedule(props: Iprops) {
         },
     ];
 
-    const startTimeForRework: any = {
-        '8:30am':'8:35am',
-        '10:00am': '10:05am',
-        '11:30am': '11:35am',
-        '01:00pm': '1:05pm',
-        '02:30pm': '2:35pm',
-        '03:30pm': '3:35pm'
-    }
-
-    /* useEffect(() => {
-
-        ValidDateSchedule.get().then((res: any) => {
-            setValidDates(res);
-
-        }).catch(err => {
-            console.log(err);
-            alert('Error to load valid dates');
-        })
-
-    }, []); */
-
     async function getValidHours() {
         let validHours = await ScheduleHoursValid.getAll();
         setJobHours(validHours);
@@ -287,6 +266,8 @@ export default function ModalAddSchedule(props: Iprops) {
         if (!props.currentCard?.SAS_SCHEDULE_ID) {
             return;
         }
+
+        setComments(props?.currentCard?.SAS_SCHEDULE_OBSERVA ?? "");
 
         setFirstOpenning(true);
 
@@ -629,15 +610,15 @@ export default function ModalAddSchedule(props: Iprops) {
             }
         } else if (serviceType === 2 || serviceType === 3 ) {
 
-            let endHour = calculateEndHour(startTime, service.duration)
-
+            let endHour = calculateEndHour(startTime, service.duration);
+            let startHour = calculateEndHour(startTime, 5);
 
             let schedule: ScheduleModel = {
                 WC_CLIENTE_COD: client.value,
                 SAS_EQUIPE_ID: selectedTeam.value,
                 SAS_SCHEDULE_DATA: startDate.split('-').reverse().join('/'),
                 SAS_SCHEDULE_HRFIM: endHour,
-                SAS_SCHEDULE_HRINICIO: startTimeForRework[startTime],
+                SAS_SCHEDULE_HRINICIO: startHour,
                 SAS_SCHEDULE_ID: props.currentCard?.SAS_SCHEDULE_ID ? props.currentCard?.SAS_SCHEDULE_ID : uuidv4(),
                 SAS_SCHEDULE_STATUS: 'ATIVO',
                 SAS_EQUIPE_INICIAL_ID: selectedTeam.value,
@@ -653,7 +634,9 @@ export default function ModalAddSchedule(props: Iprops) {
                 SAS_SCHEDULE_WEEK_DAY: ''
             }
 
-            ScheduleService.save(schedule, 'INCLUIR').then(
+            let tipo = props.currentCard?.SAS_SCHEDULE_ID ? 'ALTERAR' : 'INCLUIR';
+
+            ScheduleService.save(schedule, tipo).then(
                 retorno => {
                     props.fecharModal();
                 }
@@ -1267,7 +1250,7 @@ export default function ModalAddSchedule(props: Iprops) {
                                         </div>
                                     </div>
                                     {toggleTextarea &&
-                                        <textarea className={styles.observationTextarea} name="observations" rows={4} onChange={handleTextarea} />
+                                        <textarea className={styles.observationTextarea} name="observations" rows={4} onChange={handleTextarea}  value={props?.currentCard?.SAS_SCHEDULE_OBSERVA ?? ""}/>
                                     }
                                 </div>
 

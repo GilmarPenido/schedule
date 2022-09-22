@@ -440,7 +440,6 @@ export default function Schedule(props: any) {
                     } else {
 
                         if(scheduleData[sche.SAS_SCHEDULE_DATA][sche.SAS_EQUIPE_ID][sche.SAS_SCHEDULE_HRINICIO] === 'skiphour') { 
-
                             return;
                         }
 
@@ -1196,7 +1195,7 @@ export default function Schedule(props: any) {
 
                                         <div onClick={() => window.history.back()}>
                                             <FaRegWindowClose />
-                                            <span><b>Schedule V1.08
+                                            <span><b>Schedule V1.09
                                             </b></span>
                                         </div>
                                     </div>
@@ -1447,9 +1446,9 @@ export default function Schedule(props: any) {
                                                                         return (
 
                                                                             pt.SAS_EQUIPE_PESSOAS_TIPO === 'Supervisor' ?
-                                                                                <div key={`${pt.WC_FORNECEDOR_COD}`} style={{ display: "inline", color: selectedChangePerson ? '#e84b40' : 'inherit' }}><RiVipCrownFill color={'#F7D82F'} />{selectedChangePerson ? nameSelectedChangePerson : pt.pessoa.WC_GEN_RAZAO.split(' ')[0]}&nbsp;</div>
+                                                                                <div key={`${pt?.WC_FORNECEDOR_COD}`} style={{ display: "inline", color: selectedChangePerson ? '#e84b40' : 'inherit' }}><RiVipCrownFill color={'#F7D82F'} />{selectedChangePerson ? nameSelectedChangePerson : pt.pessoa?.WC_GEN_RAZAO.split(' ')[0]}&nbsp;</div>
                                                                                 :
-                                                                                <div key={`${pt.WC_FORNECEDOR_COD}`} style={{ display: "inline", color: selectedChangePerson ? '#e84b40' : 'inherit' }}><RiUserFill color={'#000000'} /> {selectedChangePerson ? nameSelectedChangePerson : pt.pessoa.WC_GEN_RAZAO.split(' ')[0]}&nbsp;</div>
+                                                                                <div key={`${pt?.WC_FORNECEDOR_COD}`} style={{ display: "inline", color: selectedChangePerson ? '#e84b40' : 'inherit' }}><RiUserFill color={'#000000'} /> {selectedChangePerson ? nameSelectedChangePerson : pt.pessoa?.WC_GEN_RAZAO.split(' ')[0]}&nbsp;</div>
                                                                         )
 
                                                                     })

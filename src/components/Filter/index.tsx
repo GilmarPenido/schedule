@@ -214,8 +214,8 @@ export default function Filter(
                                         {
                                             t?.equipePessoas.map(ep => (
                                                 ep.SAS_EQUIPE_PESSOAS_TIPO === 'Coordenador' ?
-                                                    <div key={ep.WC_FORNECEDOR_COD}><RiVipCrownFill color={'#F7D82F'} /> {ep.pessoa.WC_GEN_RAZAO.split(' ')[0]}&nbsp;</div> :
-                                                    <div key={ep.WC_FORNECEDOR_COD}><RiUserFill color={'#000000'} /> {ep.pessoa.WC_GEN_RAZAO.split(' ')[0]}&nbsp;</div>
+                                                    <div key={ep.WC_FORNECEDOR_COD}><RiVipCrownFill color={'#F7D82F'} /> {ep.pessoa?.WC_GEN_RAZAO.split(' ')[0]}&nbsp;</div> :
+                                                    <div key={ep.WC_FORNECEDOR_COD}><RiUserFill color={'#000000'} /> {ep.pessoa?.WC_GEN_RAZAO.split(' ')[0]}&nbsp;</div>
                                             ))
                                         }
                                     </div>
