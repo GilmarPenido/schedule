@@ -470,11 +470,13 @@ export default function ModalAddSchedule(props: Iprops) {
 
         let conflict = false;
 
-        if (recurrency) {
-            conflict = recurringDates.some((dt: any) => dt?.procedure?.some((p: any) => p.SAS_SINALIZADOR === "recurrency"));
-        } else {
-            conflict = recurringDates.some((dt: any) => dt?.procedure?.some((p: any) => p.DISPONIBILIDADE === 'NOK'));
-        }
+        console.log(recurringDates);
+
+        //if (recurrency) {
+        //    conflict = recurringDates.some((dt: any) => dt?.procedure?.some((p: any) => p.SAS_SINALIZADOR === "recurrency"));
+        //} else {
+        conflict = recurringDates.some((dt: any) => dt?.procedure?.some((p: any) => p.DISPONIBILIDADE === 'NOK'));
+        //}
 
         
 

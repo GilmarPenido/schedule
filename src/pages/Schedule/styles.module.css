@@ -148,7 +148,7 @@
     padding: 2px;
     border-right: 1px solid #bdbfc1;
     align-items: stretch;
-    width: 14.2857%;
+    width: 16.666%;
 
 }
 
@@ -183,7 +183,7 @@
     padding: 2px;
     border-right: 1px solid #bdbfc1;
     align-items: stretch;
-    width: 14.2857%;
+    width: 16.666%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
