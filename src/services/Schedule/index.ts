@@ -229,7 +229,7 @@ const ScheduleService= {
         let startDate = schedule.SAS_SCHEDULE_START_DATE?.split('/').reverse().join('');
         let endDate = schedule.SAS_SCHEDULE_END_DATE?.split('/').reverse().join('');
 
-        let variables = `&clientCod=${schedule.WC_CLIENTE_COD}&equipeId=${schedule.SAS_EQUIPE_ID}&status=${schedule.SAS_SCHEDULE_STATUS}&produtoCod=${schedule.WC_PRODUTO_COD}&startDate=${startDate}&endDate=${endDate}&propId=${schedule.SAS_PROP_ID}`;
+        let variables = `&groupId=${schedule.SAS_SCHEDULE_GROUP}&clientCod=${schedule.WC_CLIENTE_COD}&equipeId=${schedule.SAS_EQUIPE_ID}&status=${schedule.SAS_SCHEDULE_STATUS}&produtoCod=${schedule.WC_PRODUTO_COD}&startDate=${startDate}&endDate=${endDate}&propId=${schedule.SAS_PROP_ID}`;
         let url = `${CONSTANTS.IP}${CONSTANTS.PAGE_HTML5}${PAGE_ID_DEL_BATCH}${variables}`;
         api.get(url)
         .then(console.log);

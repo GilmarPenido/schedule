@@ -328,7 +328,7 @@ export default function ModalEditSchedule(props: Iprops) {
 
         updateProperty(comments);
 
-        if (recurringDates.some((dt: any) => dt?.procedure?.some( (p: any) => p.DISPONIBILIDADE === 'NOK') )) {
+        if (recurringDates.some((dt: any) => dt?.procedure?.some( (p: any) => p.DISPONIBILIDADE === 'NOK' && p.SAS_SCHEDULE_GROUP !== props?.currentCard?.SAS_SCHEDULE_GROUP ))) {
             alert('Error! Schedule Conflict.')
             return;
         }
@@ -823,7 +823,7 @@ export default function ModalEditSchedule(props: Iprops) {
 
                                                     {
                                                         recurringDates.map((rd: any) => (
-                                                            <tr className={rd?.procedure?.some( (p: any) => p.DISPONIBILIDADE === 'NOK')  ? styles.unavailable : ''} key={rd.key}>
+                                                            <tr className={rd?.procedure?.some( (p: any) => p.DISPONIBILIDADE === 'NOK' && p.SAS_SCHEDULE_GROUP !== props?.currentCard?.SAS_SCHEDULE_GROUP)  ? styles.unavailable : ''} key={rd.key}>
                                                                 <td>{rd.date.toLocaleString('en-US', { day: 'numeric', month: 'numeric', year: 'numeric' })}</td>
                                                                 <td>{startTime}</td>
                                                                 <td>{rd?.procedure?.some( (p: any) => p.DISPONIBILIDADE === 'NOK')  ? <HiXCircle size="20" color="#b32f3a"></HiXCircle> : <HiCheckCircle size="20" color="#01c293"></HiCheckCircle>}</td>

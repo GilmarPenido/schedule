@@ -219,15 +219,15 @@ export default function Schedule(props: any) {
     useEffect(() => {
 
         if (windowWidthSize < 1500) {
-            setDropNumberCaracterName(10);
+            setDropNumberCaracterName(11);
         } else if (windowWidthSize < 1600) {
-            setDropNumberCaracterName(12);
+            setDropNumberCaracterName(13);
         } else if (windowWidthSize < 1700) {
-            setDropNumberCaracterName(15);
+            setDropNumberCaracterName(16);
         } else if (windowWidthSize < 1800) {
-            setDropNumberCaracterName(17);
+            setDropNumberCaracterName(18);
         } else if (windowWidthSize < 1900) {
-            setDropNumberCaracterName(20);
+            setDropNumberCaracterName(21);
         } else if (windowWidthSize < 2000) {
             setDropNumberCaracterName(25);
         } else {
@@ -1195,7 +1195,7 @@ export default function Schedule(props: any) {
 
                                         <div onClick={() => window.history.back()}>
                                             <FaRegWindowClose />
-                                            <span><b>Schedule V1.11
+                                            <span><b>Schedule V1.13
                                             </b></span>
                                         </div>
                                     </div>
@@ -1332,7 +1332,7 @@ export default function Schedule(props: any) {
 
                                                                                                                 {sche.SAS_SCHEDULE_OBSERVA !== '' &&
                                                                                                                     <IoMail size={'14px'} onMouseOver={(event) => {
-                                                                                                                        let message = `skiped on ${dt.toLocaleString('en-US', { dateStyle: 'short' })} <br> client ${sche.SAS_CLI_NOME_COMPLETO} <br> ${sche?.SAS_SCHEDULE_OBSERVA}`;
+                                                                                                                        let message = `${dt.toLocaleString('en-US', { dateStyle: 'short' })} <br> client ${sche.SAS_CLI_NOME_COMPLETO} <br> ${sche?.SAS_SCHEDULE_OBSERVA}`;
                                                                                                                         openMessagePopover(event, message)
                                                                                                                     }}></IoMail>
                                                                                                                 }

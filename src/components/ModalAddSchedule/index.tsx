@@ -111,6 +111,7 @@ export default function ModalAddSchedule(props: Iprops) {
     const [frequency, setFrequency] = useState<'week' | 'day' | 'month' | 'year'>('week');
     const [dayOfWeek, setDayOfWeek] = useState<number | null>();
     const [comments, setComments] = useState('');
+    const [propertyComments, setPropertyComments] = useState('');
     const [recurringDates, setRecurringDates] = useState([]);
 
     const [recurrency, setRecurrency] = useState(true);
@@ -179,7 +180,7 @@ export default function ModalAddSchedule(props: Iprops) {
         if (!loadingScreen) {
             searchService();
         }
-    }, [startDate, startTime, endDate, every, frequency, dayOfWeek, property, service, client, selectedTeam, recurrency, comments])
+    }, [startDate, startTime, endDate, every, frequency, dayOfWeek, property, service, client, selectedTeam, recurrency])
 
 
     function updateServices(allServices= fullServices) {
@@ -268,6 +269,8 @@ export default function ModalAddSchedule(props: Iprops) {
         }
 
         setComments(props?.currentCard?.SAS_SCHEDULE_OBSERVA ?? "");
+
+        setPropertyComments(props?.currentCard?.SAS_PROP_DET ? `${atob(props?.currentCard?.SAS_PROP_DET)}` : '');
 
         setFirstOpenning(true);
 
@@ -478,8 +481,6 @@ export default function ModalAddSchedule(props: Iprops) {
         conflict = recurringDates.some((dt: any) => dt?.procedure?.some((p: any) => p.DISPONIBILIDADE === 'NOK'));
         //}
 
-        
-
         if (conflict && serviceType === 1) {
             alert('Error! Schedule Conflict.');
             return;
@@ -525,9 +526,6 @@ export default function ModalAddSchedule(props: Iprops) {
                 })
 
                 let tipo = props.currentCard?.SAS_SCHEDULE_ID ? 'ALTERAR' : 'INCLUIR';
-
-
-
 
                 ScheduleService.saveBatch(scheduleArray, tipo).then(() => {
                     props.fecharModal();
@@ -1033,6 +1031,11 @@ export default function ModalAddSchedule(props: Iprops) {
         setComments(event.target.value);
     }
 
+    function handleTextareaProperty(event: ChangeEvent<HTMLTextAreaElement>) {
+        setPropertyComments(event.target.value);
+    }
+
+
     function handleInputDate(date: string, type: string) {
 
         if (type === 'start') {
@@ -1240,7 +1243,8 @@ export default function ModalAddSchedule(props: Iprops) {
                                             disabled={true}
                                             name="observations"
                                             rows={4}
-                                            value={props?.currentCard?.SAS_PROP_DET ? `${atob(props?.currentCard?.SAS_PROP_DET)}` : ''} />
+                                            onChange={handleTextareaProperty}
+                                            value={propertyComments} />
                                     }
                                 </div>
 
@@ -1252,7 +1256,7 @@ export default function ModalAddSchedule(props: Iprops) {
                                         </div>
                                     </div>
                                     {toggleTextarea &&
-                                        <textarea className={styles.observationTextarea} name="observations" rows={4} onChange={handleTextarea}  value={props?.currentCard?.SAS_SCHEDULE_OBSERVA ?? ""}/>
+                                        <textarea className={styles.observationTextarea} name="observations" rows={4} onChange={handleTextarea}  value={comments}/>
                                     }
                                 </div>
 
