@@ -35,7 +35,7 @@ const ScheduleService= {
             
             url = sinalizador !== '' ?  url + `&SAS_SINALIZADOR=${sinalizador}` : url;
 
-        return api.get(CONSTANTS.IP + url)
+        return api.get(encodeURI(CONSTANTS.IP + url))
             .then((result: AxiosResponse<any>) => {
                 //console.log(result.data)
             })
@@ -113,7 +113,7 @@ const ScheduleService= {
 
         }
 
-        return api.get(CONSTANTS.IP + url)
+        return api.get(encodeURI(CONSTANTS.IP + url))
             .then((result: AxiosResponse<any>) => {
                 console.log(result.data)
             })

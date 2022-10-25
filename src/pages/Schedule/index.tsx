@@ -275,9 +275,9 @@ export default function Schedule(props: any) {
         browseWeek(date.getDate(), date.getMonth(), date.getFullYear());
     }, [])
 
-    useEffect(() => {
+    /* useEffect(() => {
         window.scrollTo(0, 0)
-    }, [openModalAdd, openModalEdit, openModalView])
+    }, [openModalAdd, openModalEdit]) */
 
 
     useEffect(() => {
@@ -1065,10 +1065,13 @@ export default function Schedule(props: any) {
                                     scheduleUpdate={scheduleUpdate}
                                     confirmAction={confirmAction.current}
                                     fecharModal={
-                                        () => {
+                                        (reload = false) => {
                                             setOpenModalAddNote(false);
                                             setCurrentCard(undefined);
-                                            setLoadScheduleCard([]);
+
+                                            if(reload) {
+                                                setLoadScheduleCard([]);
+                                            }
                                         }}
                                     currentCard={currentCard}
                                 />
@@ -1101,10 +1104,13 @@ export default function Schedule(props: any) {
                                     defaultClient={selectedClient}
                                     oportuniId={oportuniID}
                                     fecharModal={
-                                        () => {
+                                        (reload=false) => {
                                             setOpenModalAdd(false);
                                             setCurrentCard(undefined);
-                                            scheduleUpdate();
+
+                                            if(reload) {
+                                                scheduleUpdate();
+                                            }
                                         }}
                                     currentCard={currentCard}
                                 />
@@ -1118,10 +1124,13 @@ export default function Schedule(props: any) {
                                     defaultClient={selectedClient}
                                     oportuniId={oportuniID}
                                     fecharModal={
-                                        () => {
+                                        (reload=false) => {
                                             setOpenModalEdit(false);
                                             setCurrentCard(undefined);
-                                            scheduleUpdate();
+
+                                            if(reload) {
+                                                scheduleUpdate();
+                                            }
                                         }}
                                     currentCard={currentCard}
                                 />
@@ -1195,7 +1204,7 @@ export default function Schedule(props: any) {
 
                                         <div onClick={() => window.history.back()}>
                                             <FaRegWindowClose />
-                                            <span><b>Schedule V1.13
+                                            <span><b>Schedule V1.15
                                             </b></span>
                                         </div>
                                     </div>

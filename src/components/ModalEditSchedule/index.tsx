@@ -326,10 +326,11 @@ export default function ModalEditSchedule(props: Iprops) {
 
         setSavingSchedule(true);
 
-        updateProperty(comments);
+        //updateProperty(comments);
 
         if (recurringDates.some((dt: any) => dt?.procedure?.some( (p: any) => p.DISPONIBILIDADE === 'NOK' && p.SAS_SCHEDULE_GROUP !== props?.currentCard?.SAS_SCHEDULE_GROUP ))) {
-            alert('Error! Schedule Conflict.')
+            alert('Error! Schedule Conflict.');
+            setSavingSchedule(false);
             return;
         }
 
@@ -375,7 +376,7 @@ export default function ModalEditSchedule(props: Iprops) {
 
             ScheduleService.saveBatch(scheduleArray, tipo)
             .then(() => {
-                props.fecharModal();
+                props.fecharModal(true);
             });
 
 

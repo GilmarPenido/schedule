@@ -171,6 +171,7 @@ export default function ModalAddSchedule(props: Iprops) {
 
     useEffect(() => {
         getValidHours();
+
     }, [])
 
     useEffect(() => {
@@ -180,6 +181,7 @@ export default function ModalAddSchedule(props: Iprops) {
         if (!loadingScreen) {
             searchService();
         }
+
     }, [startDate, startTime, endDate, every, frequency, dayOfWeek, property, service, client, selectedTeam, recurrency])
 
 
@@ -245,8 +247,6 @@ export default function ModalAddSchedule(props: Iprops) {
         if(fullServices.length > 0) {
             updateServices();
         }
-
-
 
     }, [serviceType])
 
@@ -528,7 +528,8 @@ export default function ModalAddSchedule(props: Iprops) {
                 let tipo = props.currentCard?.SAS_SCHEDULE_ID ? 'ALTERAR' : 'INCLUIR';
 
                 ScheduleService.saveBatch(scheduleArray, tipo).then(() => {
-                    props.fecharModal();
+                    let reload = true;
+                    props.fecharModal(reload);
                 });
 
             } else {
@@ -603,7 +604,7 @@ export default function ModalAddSchedule(props: Iprops) {
 
                     ScheduleService.save(schedule, tipo).then(
                         retorno => {
-                            props.fecharModal();
+                            props.fecharModal(true);
                         }
                     )
                 })
@@ -638,7 +639,7 @@ export default function ModalAddSchedule(props: Iprops) {
 
             ScheduleService.save(schedule, tipo).then(
                 retorno => {
-                    props.fecharModal();
+                    props.fecharModal(true);
                 }
             )
 
