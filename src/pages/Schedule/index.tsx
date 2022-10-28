@@ -1204,7 +1204,7 @@ export default function Schedule(props: any) {
 
                                         <div onClick={() => window.history.back()}>
                                             <FaRegWindowClose />
-                                            <span><b>Schedule V1.15
+                                            <span><b>Schedule V1.17
                                             </b></span>
                                         </div>
                                     </div>

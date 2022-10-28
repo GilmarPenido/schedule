@@ -437,7 +437,8 @@ export default function ModalAddSchedule(props: Iprops) {
                     let prop =
                         property.consulta.map(p => ({
                             value: p.SAS_PROP_ID,
-                            label: p.SAS_PROP_ENDERECO1
+                            label: p.SAS_PROP_ENDERECO1,
+                            comment: p.SAS_PROP_DET
                         }))
                     setProperties(prop);
 
@@ -473,7 +474,7 @@ export default function ModalAddSchedule(props: Iprops) {
 
         let conflict = false;
 
-        console.log(recurringDates);
+        //console.log(recurringDates);
 
         //if (recurrency) {
         //    conflict = recurringDates.some((dt: any) => dt?.procedure?.some((p: any) => p.SAS_SINALIZADOR === "recurrency"));
@@ -532,9 +533,11 @@ export default function ModalAddSchedule(props: Iprops) {
                     props.fecharModal(reload);
                 });
 
+                PropertyService.updateComment(property.value, propertyComments);
+
             } else {
 
-
+                PropertyService.updateComment(property.value, propertyComments);
                 recurringDates.map(async (rd: any) => {
 
 
@@ -661,7 +664,8 @@ export default function ModalAddSchedule(props: Iprops) {
     }
 
     function handleProperty(data: any) {
-        setProperty(data)
+        setProperty(data);
+        setPropertyComments(atob(data.comment));
     }
 
     function handleTeam(data: any) {
@@ -762,7 +766,6 @@ export default function ModalAddSchedule(props: Iprops) {
 
             let scheduleStats: ScheduleProcedureModel[] = await QueryExec.exec(`EXECUTE [dbo].[scheduler_builder_tester] '${service.value}','${selectedTeam.value}','${formatDate(dtObj.date)}','${time}'`);
 
-            console.log(scheduleStats);
 
             if (scheduleStats.length) {
                 dates[index]['procedure'] = scheduleStats;
@@ -996,7 +999,7 @@ export default function ModalAddSchedule(props: Iprops) {
         } else {
 
 
-            console.log(client?.value, property?.value, selectedTeam?.value, service?.value, startDate, startTime)
+            //console.log(client?.value, property?.value, selectedTeam?.value, service?.value, startDate, startTime)
 
             if (!(client?.value && property?.value && selectedTeam?.value && service?.value && startDate && startTime)) {
                 return;
@@ -1241,7 +1244,6 @@ export default function ModalAddSchedule(props: Iprops) {
                                     {toggleTextareaProp &&
                                         <textarea
                                             className={styles.observationTextareaProp}
-                                            disabled={true}
                                             name="observations"
                                             rows={4}
                                             onChange={handleTextareaProperty}
@@ -1257,7 +1259,12 @@ export default function ModalAddSchedule(props: Iprops) {
                                         </div>
                                     </div>
                                     {toggleTextarea &&
-                                        <textarea className={styles.observationTextarea} name="observations" rows={4} onChange={handleTextarea}  value={comments}/>
+                                        <textarea 
+                                            className={styles.observationTextarea} 
+                                            name="observations" 
+                                            rows={4} 
+                                            onChange={handleTextarea}  
+                                            value={comments}/>
                                     }
                                 </div>
 

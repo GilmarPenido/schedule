@@ -39,6 +39,28 @@ const PropertyService = {
             })
     },
 
+    updateComment: (id: string, details: string, tipo: string = 'ALTERAR') => {
+
+        let usr = CONSTANTS.USR;
+        let psw = CONSTANTS.PSW;
+
+        let url = `api/transaction/?processo=${PROCESS}` +
+            `&opcao=${tipo}` +
+            `&SAS_PROP_ID=${id}` +
+            `&SAS_PROP_DET=${details}` +
+
+            `&idproc=0` +
+            `&VALIDA_INI=true` +
+            `&bsaved=false` + 
+            `&usr=${usr}` +
+            `&psw=${psw}`;
+            
+        return api.get( encodeURI(CONSTANTS.IP + url) )
+            .then((result: AxiosResponse<any>) => {
+                return result.data
+            })
+    },
+
     delete: (SAS_CLI_ID: string) => {
         let usr = CONSTANTS.USR;
         let psw = CONSTANTS.PSW;
