@@ -638,12 +638,12 @@ export default function Schedule(props: any) {
     function browseWeek(day: number, month = selectedMonth, year = selectedYear) {
 
 
-        console.log(day, month, year);
+        //console.log(day, month, year);
 
         let date = new Date();
-        date.setMonth(month);
-        date.setDate(day)
         date.setFullYear(year);
+        date.setDate(day)
+        date.setMonth(month);
 
         let dayOfWeek = date.getDay();
         date.setDate(date.getDate() - (dayOfWeek + 1));
@@ -654,7 +654,7 @@ export default function Schedule(props: any) {
             dateArray.push(new Date(date))
         }
 
-        console.log(dateArray)
+        //console.log(dateArray)
 
 
         setDates(dateArray)
