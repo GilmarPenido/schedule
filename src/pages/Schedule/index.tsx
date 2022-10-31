@@ -628,12 +628,17 @@ export default function Schedule(props: any) {
             dateArray.push(new Date(date))
         }
 
+        console.log(dateArray);
+
         setDates(dateArray)
 
 
     }
 
     function browseWeek(day: number, month = selectedMonth, year = selectedYear) {
+
+
+        console.log(day, month, year);
 
         let date = new Date();
         date.setMonth(month);
@@ -648,6 +653,8 @@ export default function Schedule(props: any) {
             date.setDate(date.getDate() + 1)
             dateArray.push(new Date(date))
         }
+
+        console.log(dateArray)
 
 
         setDates(dateArray)
@@ -1204,7 +1211,7 @@ export default function Schedule(props: any) {
 
                                         <div onClick={() => window.history.back()}>
                                             <FaRegWindowClose />
-                                            <span><b>Schedule V1.17
+                                            <span><b>Schedule V1.18
                                             </b></span>
                                         </div>
                                     </div>

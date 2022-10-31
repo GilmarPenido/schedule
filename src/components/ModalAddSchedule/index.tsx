@@ -1032,7 +1032,21 @@ export default function ModalAddSchedule(props: Iprops) {
     }
 
     function handleTextarea(event: ChangeEvent<HTMLTextAreaElement>) {
-        setComments(event.target.value);
+
+        let value = event.target.value;
+        
+        setComments(value);
+
+        if (serviceType === 2) {
+
+            if(value.trim() > '') {
+                setReleaseConfirm(true);
+            } else {
+                
+                setReleaseConfirm(false);
+            }
+            return;
+        }
     }
 
     function handleTextareaProperty(event: ChangeEvent<HTMLTextAreaElement>) {
@@ -1244,6 +1258,7 @@ export default function ModalAddSchedule(props: Iprops) {
                                     {toggleTextareaProp &&
                                         <textarea
                                             className={styles.observationTextareaProp}
+                                            required={false}
                                             name="observations"
                                             rows={4}
                                             onChange={handleTextareaProperty}
