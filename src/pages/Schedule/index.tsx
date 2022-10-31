@@ -288,11 +288,8 @@ export default function Schedule(props: any) {
 
     useEffect(() => {
 
-        let date = new Date();
-        date.setDate(1);
-        date.setMonth(selectedMonth);
-        date.setFullYear(selectedYear);
-
+        let date = new Date(selectedYear, selectedMonth, 1);
+        
         let ArrayWeeksNavigator = []
 
         let lastDayOfMonth = (new Date(date.getFullYear(), date.getMonth() + 1, 0)).getDate();
@@ -329,7 +326,10 @@ export default function Schedule(props: any) {
     useEffect(() => {
 
         if (filterDate !== '') {
-            let date = new Date(filterDate);
+            let date = new Date(filterDate + " 00:00");
+
+            console.log(filterDate);
+            console.log(date.getMonth());
             setSelectedYear(date.getFullYear());
             setInitialDate(date.toLocaleString('en-us', { month: 'short', year: 'numeric' }))
             setSelectedMonth(date.getMonth());
@@ -361,13 +361,7 @@ export default function Schedule(props: any) {
 
 
     function convertDateSqlToDate(dateSQL: string) {
-        let date = new Date();
-
-        date.setFullYear(parseInt(dateSQL.substring(6, 10)));
-
-        date.setMonth(parseInt(dateSQL.substring(3, 5)) - 1);
-
-        date.setDate(parseInt(dateSQL.substring(0, 2)));
+        let date = new Date(parseInt(dateSQL.substring(6, 10)),parseInt(dateSQL.substring(3, 5)) - 1, parseInt(dateSQL.substring(0, 2)));
 
         return date;
     }
@@ -604,9 +598,7 @@ export default function Schedule(props: any) {
             year = year + 1;
         }
 
-        date.setDate(1);
-        date.setFullYear(year);
-        date.setMonth(month);
+        date = new Date(year, month, 1);
 
         console.log(date);
 
@@ -640,10 +632,7 @@ export default function Schedule(props: any) {
 
         //console.log(day, month, year);
 
-        let date = new Date();
-        date.setFullYear(year);
-        date.setDate(day)
-        date.setMonth(month);
+        let date = new Date(year, month, day);
 
         let dayOfWeek = date.getDay();
         date.setDate(date.getDate() - (dayOfWeek + 1));
@@ -1211,7 +1200,7 @@ export default function Schedule(props: any) {
 
                                         <div onClick={() => window.history.back()}>
                                             <FaRegWindowClose />
-                                            <span><b>Schedule V1.18
+                                            <span><b>Schedule V1.19
                                             </b></span>
                                         </div>
                                     </div>
