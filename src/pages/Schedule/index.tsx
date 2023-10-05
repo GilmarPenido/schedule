@@ -259,12 +259,19 @@ export default function Schedule(props: any) {
 
         let oportuniPropId = props.location.search.match(/(?<=oportuniId=)\d*/i);
 
+        
+
         if (oportuniPropId) {
             setOportuniID(oportuniPropId[0]);
             OportuniService.getByLead(oportuniPropId).then(opt => {
                 let codCli = opt.consulta[0].WF_OPORTUNI_CLIPROS;
                 setSelectedClient(codCli);
             });
+        }
+
+        let clientPropId =  props.location.search.match(/(?<=clientId=)\d*/i);
+        if(clientPropId) {
+            setSelectedClient(clientPropId[0]);
         }
 
         getTeams();
@@ -1200,7 +1207,7 @@ export default function Schedule(props: any) {
 
                                         <div onClick={() => window.history.back()}>
                                             <FaRegWindowClose />
-                                            <span><b>Schedule V1.19
+                                            <span><b>Schedule V1.21
                                             </b></span>
                                         </div>
                                     </div>

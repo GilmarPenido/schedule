@@ -130,6 +130,8 @@ export default function ModalEditSchedule(props: Iprops) {
 
     useEffect(() => {
 
+        console.log(props?.currentCard?.SAS_SCHEDULE_GROUP);
+
         if (props?.currentCard?.type === 'newschedule') {
             setRecurrency(false);
             calculateStartTime(props.currentCard.time);
@@ -495,7 +497,7 @@ export default function ModalEditSchedule(props: Iprops) {
             }
             dates[index]['time'] = time;
             dates[index]['key'] = v4();
-        }))
+        }));
 
         setRecurringDates(dates);
 
@@ -531,6 +533,8 @@ export default function ModalEditSchedule(props: Iprops) {
             dates.push({ date: new Date(date) });
         }
 
+
+        dates = dates.filter((date: any) => date.date >= (new Date()));
 
         if (frequency !== 'day') {
             dates = dates.map(
