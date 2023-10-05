@@ -3,7 +3,7 @@ function defineUrl() {
     let index = url.match('_')?.index || -1;
 
     if(url.includes('localhost')) {
-        return 'https://hom.onesuite.app/greatjobprohom2/'
+        return 'https://bequaestro.quarkian.io/main/'
     }
 
     return url.slice(0, index) + '/';
