@@ -112,6 +112,17 @@
     margin-top: 10px;
 }
 
+.selectFirstProductContainer {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.selectFirstProduct {
+    width: 96%;
+}
+
 .inputGroup input {
     height: 36px;
     min-width: 79%;

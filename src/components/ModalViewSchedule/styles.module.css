@@ -127,7 +127,7 @@
 }
 
 .tableAvailableTimeContainer {
-    height: 190px;
+    height: auto;
     overflow: auto;
     border-radius: 8px;
     border: 1px solid #b7b7b7;

@@ -33,4 +33,5 @@ export default interface ScheduleModel {
     SAS_SCHEDULE_CREATEDAT?: string
     SAS_SCHEDULE_REC_ID?: string
     SAS_SCHEDULE_GROUP?: string
+    SAS_SCHEDULE_SERVICES?: Array<any>
 }

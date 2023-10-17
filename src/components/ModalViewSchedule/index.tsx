@@ -23,6 +23,8 @@ import { BiPlusCircle } from 'react-icons/bi';
 import OportuniService from '../../services/oportuni';
 import AsyncSelect from 'react-select/async';
 import { ChangeEvent } from 'react';
+import ScheduleProdutoService from '../../services/schedule-produtos'
+import ScheduleProduto from '../../Models/schedule-produto';
 
 interface Iprops {
     fecharModal: any
@@ -85,6 +87,8 @@ export default function ModalViewSchedule(props: Iprops) {
     const [loading, setLoading] = useState(false);
     const [savingSchedule, setSavingSchedule] = useState(false);
 
+    const [additionalServices, setAdditionalServices] = useState<Array<any>>();
+
     const daysOfWeek = [
         {
             abrev: "S",
@@ -122,12 +126,12 @@ export default function ModalViewSchedule(props: Iprops) {
             return;
         }
         searchService();
-        
+
     }, [startDate, startTime, endDate, every, frequency, dayOfWeek, property, service, client, selectedTeam, recurrency])
 
     useEffect(() => {
 
-        if(props?.currentCard?.type === 'newschedule'){
+        if (props?.currentCard?.type === 'newschedule') {
             setRecurrency(false);
             calculateStartTime(props.currentCard.time);
             setStartDate(props.currentCard.date.toISOString().split("T")[0]);
@@ -138,7 +142,7 @@ export default function ModalViewSchedule(props: Iprops) {
         }
 
 
-        if(props?.currentCard?.SAS_SCHEDULE_STATUS === 'Skip') {
+        if (props?.currentCard?.SAS_SCHEDULE_STATUS === 'Skip') {
 
             props.currentCard.WC_CLIENTE_COD = null;
 
@@ -172,8 +176,8 @@ export default function ModalViewSchedule(props: Iprops) {
 
         console.log(props.currentCard?.SAS_PROP_DET);
         if (props.currentCard?.SAS_PROP_DET) {
-            
-            setComments( atob(props.currentCard?.SAS_PROP_DET)  + '\n' + props.currentCard?.SAS_SCHEDULE_OBSERVA ?? '') ;
+
+            setComments(atob(props.currentCard?.SAS_PROP_DET) + '\n' + props.currentCard?.SAS_SCHEDULE_OBSERVA ?? '');
 
         }
 
@@ -187,7 +191,7 @@ export default function ModalViewSchedule(props: Iprops) {
 
         if (props.currentCard?.SAS_SCHEDULE_WEEK_DAY) {
             let dayOfWeek: any = daysOfWeek.find(day => day.value == props.currentCard.SAS_SCHEDULE_WEEK_DAY);
-            setDayOfWeek( parseInt(dayOfWeek.value));
+            setDayOfWeek(parseInt(dayOfWeek.value));
         }
 
         setDisableFields(true)
@@ -196,8 +200,20 @@ export default function ModalViewSchedule(props: Iprops) {
 
     }, []);
 
-    function calculateStartTime(initialTime: string) {
-        setStartTime(initialTime);
+    function calculateStartTime(initialTime: any) {
+
+
+        let [hrIni, minIni] = initialTime.match(/[0-9]+/g);
+        hrIni = parseInt(hrIni);
+        minIni = parseInt(minIni);
+        let pm = initialTime.match('pm') !== null;
+        hrIni = (pm && hrIni < 12) ? hrIni + 12 : hrIni
+
+
+        let hr = `${hrIni}`.padStart(2, '0')
+        let min = `${minIni}`.padStart(2, '0')
+
+        setStartTime(`${hr}:${min}`);
     }
 
     useEffect(() => {
@@ -206,7 +222,7 @@ export default function ModalViewSchedule(props: Iprops) {
 
         if (props.defaultClient) {
             cli = props.defaultClient;
-        }else if (props.currentCard?.WC_CLIENTE_COD && !skip) {
+        } else if (props.currentCard?.WC_CLIENTE_COD && !skip) {
             cli = props.currentCard.WC_CLIENTE_COD;
         }
 
@@ -243,8 +259,8 @@ export default function ModalViewSchedule(props: Iprops) {
             getProperties(props.currentCard.WC_CLIENTE_COD)
         } */
 
-        
-        
+
+
         /* ClientService
             .getAll()
             .then(data => {
@@ -277,20 +293,20 @@ export default function ModalViewSchedule(props: Iprops) {
 
     const handleClients = (inputValue: string) => {
         return ClientService
-           .get(inputValue)
-           .then( clients => {
+            .get(inputValue)
+            .then(clients => {
                 let client =
-                clients.consulta.map(c => ({
-                    value: c.WC_CLIENTE_COD,
-                    label: `${c.SAS_CLI_PRIMEIRO_NOME} ${c.SAS_CLI_SOBRENOME}`
-                }))
+                    clients.consulta.map(c => ({
+                        value: c.WC_CLIENTE_COD,
+                        label: `${c.SAS_CLI_PRIMEIRO_NOME} ${c.SAS_CLI_SOBRENOME}`
+                    }))
                 return client;
 
-           })
+            })
 
     }
 
-    
+
 
     useEffect(() => {
         ServiceDetailsService
@@ -307,11 +323,46 @@ export default function ModalViewSchedule(props: Iprops) {
 
                 if (props.currentCard?.WC_PRODUTO_COD && !skip) {
                     let sv = serv.find(s => s.value === props.currentCard?.WC_PRODUTO_COD);
+                    let servicestoSchedule = []
+                    servicestoSchedule.push(sv);
+                    setAdditionalServices(servicestoSchedule);
                     setService(sv);
                 }
 
             })
     }, [])
+
+
+    useEffect(() => {
+        ScheduleProdutoService
+            .getAll(props.currentCard.SAS_SCHEDULE_ID)
+            .then(services => {
+
+                let servicestoSchedule: any = []
+
+                services.map(s => {
+
+                    servicestoSchedule.push(
+                        {
+                            value: s.WC_PRODUTO_COD,
+                            label: s.WC_PRODUTO_DESC,
+                            duration: s.SAS_SERVICE_DURACAO
+                        });
+
+
+
+                })
+
+                if (servicestoSchedule.length > 1) {
+                    setAdditionalServices(servicestoSchedule);
+                }
+
+
+
+            })
+    }, [service])
+
+
 
 
     useEffect(() => {
@@ -336,10 +387,10 @@ export default function ModalViewSchedule(props: Iprops) {
                     setSelectedProperty(propertySelected);
 
                     let prop =
-                    property.consulta.map(p => ({
-                        value: p.SAS_PROP_ID,
-                        label: p.SAS_PROP_ENDERECO1
-                    }))
+                        property.consulta.map(p => ({
+                            value: p.SAS_PROP_ID,
+                            label: p.SAS_PROP_ENDERECO1
+                        }))
                     setProperties(prop);
 
                     if (props.currentCard?.SAS_PROP_ID && !skip) {
@@ -364,7 +415,7 @@ export default function ModalViewSchedule(props: Iprops) {
         let dateTimer = new Date();
         dateTimer.setHours(hr);
         dateTimer.setMinutes(min + serviceTime);
-        let endHour = dateTimer.toLocaleString('en-US', {hour: 'numeric', minute: 'numeric'}).toLocaleLowerCase().replace(/\s/g, '');
+        let endHour = dateTimer.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric' }).toLocaleLowerCase().replace(/\s/g, '');
 
         return endHour;
     }
@@ -401,29 +452,29 @@ export default function ModalViewSchedule(props: Iprops) {
                 let dateTimer = new Date();
                 dateTimer.setHours(hr);
                 dateTimer.setMinutes(min + service.duration); */
-                
+
                 let endHour = calculateEndHour(rd.time, service.duration)
 
-                
+
                 let schedule: ScheduleModel = {
                     WC_CLIENTE_COD: client.value,
                     SAS_EQUIPE_ID: selectedTeam.value,
                     SAS_SCHEDULE_DATA: rd.date.toLocaleString('pt-BR', { dateStyle: "short" }),
                     SAS_SCHEDULE_HRFIM: endHour,
                     SAS_SCHEDULE_HRINICIO: rd.time,
-                    SAS_SCHEDULE_ID:  uuidv4(),
+                    SAS_SCHEDULE_ID: uuidv4(),
                     SAS_SCHEDULE_STATUS: 'ATIVO',
                     SAS_EQUIPE_INICIAL_ID: selectedTeam.value,
                     WC_PRODUTO_COD: service.value,
-                    SAS_SINALIZADOR:  recurrency ? 'recurrency' : '',
+                    SAS_SINALIZADOR: recurrency ? 'recurrency' : '',
                     SAS_SCHEDULE_OBSERVA: comments,
                     SAS_PROP_ID: property.value,
                     WF_OPORTUNI_ID: props?.oportuniId || '',
                     SAS_SCHEDULE_START_DATE: recurrency ? startDate.split('-').reverse().join('/') : '',
                     SAS_SCHEDULE_END_DATE: recurrency ? endDate.split('-').reverse().join('/') : '',
                     SAS_SCHEDULE_EVERY: recurrency ? every : '',
-                    SAS_SCHEDULE_FREQUENCY:  recurrency ? frequency : '',
-                    SAS_SCHEDULE_WEEK_DAY:  recurrency ? `${dayOfWeek}` : ''
+                    SAS_SCHEDULE_FREQUENCY: recurrency ? frequency : '',
+                    SAS_SCHEDULE_WEEK_DAY: recurrency ? `${dayOfWeek}` : ''
                 }
                 //let tipo = props.currentCard?.SAS_SCHEDULE_ID ? 'ALTERAR' : 'INCLUIR';
                 let tipo = 'INCLUIR';
@@ -508,12 +559,12 @@ export default function ModalViewSchedule(props: Iprops) {
             setSelectedTeam(selectedTeam);
         }
 
-        if(props.currentCard?.type === 'newschedule') {
+        if (props.currentCard?.type === 'newschedule') {
             let selectedTeam = teams.find(t => t.value === props.currentCard?.team.SAS_EQUIPE_ID)
             setSelectedTeam(selectedTeam);
         }
 
-        
+
     }
 
     async function createOptionDate() {
@@ -533,7 +584,7 @@ export default function ModalViewSchedule(props: Iprops) {
         let min = parseInt(minStr);
 
         let pm = startTime.match('pm') !== null;
-        
+
         hr = (pm && hr < 12) ? hr + 12 : hr;
 
         datetime.setHours(hr);
@@ -566,7 +617,7 @@ export default function ModalViewSchedule(props: Iprops) {
         let lastDate: Date = new Date(endDate)
         lastDate.setMinutes(lastDate.getMinutes() + lastDate.getTimezoneOffset())
 
-        
+
 
         let datetime = new Date();
 
@@ -635,7 +686,7 @@ export default function ModalViewSchedule(props: Iprops) {
 
         setLoading(false);
 
-        if(loadingScreen) {
+        if (loadingScreen) {
             do {
                 if (selectedTeam) {
                     setTimeout(() => {
@@ -680,7 +731,7 @@ export default function ModalViewSchedule(props: Iprops) {
     function searchService() {
 
         setRecurringDates([]);
-        
+
 
         if (recurrency) {
             if (!(client?.value && property?.value && selectedTeam?.value && service?.value && startDate && endDate && startTime && every && frequency && Number.isInteger(dayOfWeek))) {
@@ -697,10 +748,10 @@ export default function ModalViewSchedule(props: Iprops) {
         }
     }
 
-    function addYears(years: number){
-        
-        if(startDate) {
-            let dt = endDate ? new Date(endDate) :  new Date(startDate);
+    function addYears(years: number) {
+
+        if (startDate) {
+            let dt = endDate ? new Date(endDate) : new Date(startDate);
             dt.setFullYear(dt.getFullYear() + years);
             setEndDate(dt.toISOString().split('T')[0]);
         }
@@ -709,7 +760,7 @@ export default function ModalViewSchedule(props: Iprops) {
     function updateProperty(propDetails: string) {
 
         selectedProperty.SAS_PROP_DET = propDetails;
-        
+
         PropertyService.save(selectedProperty.SAS_PROP_ID, selectedProperty, 'ALTERAR')
 
     }
@@ -724,7 +775,7 @@ export default function ModalViewSchedule(props: Iprops) {
                     <div className={styles.corpoSchedule}>
 
                         <div className={styles.modalScheduleHeader}>
-                            <img src={addSchedule} alt="Add Schedule" />
+                            <img src={addSchedule} alt="Schedule" />
                             <b> &nbsp;&nbsp;{props.titulo}</b>
                         </div>
 
@@ -744,15 +795,34 @@ export default function ModalViewSchedule(props: Iprops) {
                             </div>
                             :
                             <>
-                                <Select
-                                    required
-                                    isDisabled={true}
-                                    value={service}
-                                    className={styles.select}
-                                    placeholder='Service'
-                                    onChange={handleService}
-                                    options={serviceDetails} />
-                                
+
+
+
+
+                            <div style={{'margin': '5px 3px','padding': '5px', 'border': '1.5px solid var(--grey-menu)'}}>
+                                <h3>Products</h3>
+
+                                {
+                                    additionalServices?.map((serviceToSchedule, k) => (
+
+                                        <div key={Math.random() * k}>
+                                            <Select
+                                                required
+                                                isDisabled={true}
+                                                value={serviceToSchedule}
+                                                className={styles.select}
+                                                placeholder='Service'
+                                                onChange={handleService}
+                                                options={serviceDetails} />
+
+                                        </div>
+
+                                    ))
+
+                                }
+                            </div>
+
+
                                 <AsyncSelect
                                     required
                                     isDisabled={true}
@@ -789,7 +859,7 @@ export default function ModalViewSchedule(props: Iprops) {
                                 <div className={recurrency ? styles.recurrenceItens : styles.oneDate}>
                                     <div className={styles.inputContainer}>
                                         <span>{recurrency ? 'Start Date' : 'Date'}</span>
-                                        <input type="date" value={startDate} name='StartDate' disabled={true}/>
+                                        <input type="date" value={startDate} name='StartDate' disabled={true} />
                                     </div>
                                     {recurrency &&
                                         <div className={styles.inputContainer}>
@@ -799,20 +869,12 @@ export default function ModalViewSchedule(props: Iprops) {
                                     }
                                     <div className={styles.inputContainer}>
                                         <span>Start Time</span>
-                                        <select value={startTime} name='StartTime' disabled={true}>
-                                            <option value="08:30am">08:30am</option>
-                                            <option value="10:00am">10:00am</option>
-                                            <option value="11:30am">11:30am</option>
-                                            <option value="1:00pm">1:00pm</option>
-                                            <option value="2:30pm">2:30pm</option>
-                                            <option value="3:30pm">3:30pm</option>
-                                        </select>
-                                        {/* <input type="time" value={startTime} name='StartTime' onChange={(event) => setStartTime(event.target.value)}/> */}
+                                        <input type="time" value={startTime} name='StartTime' onChange={(event) => setStartTime(event.target.value)} disabled={true} />
                                     </div>
                                     {recurrency && <>
                                         <div className={styles.inputContainer}>
                                             <span>Every</span>
-                                            <input type="number" value={every} name='Every' disabled={true}/>
+                                            <input type="number" value={every} name='Every' disabled={true} />
                                         </div>
                                         <div className={styles.inputContainer}>
                                             <span>Frequency</span>
@@ -829,7 +891,7 @@ export default function ModalViewSchedule(props: Iprops) {
                                                 {
                                                     daysOfWeek.map(
                                                         (day: any) =>
-                                                        (<div>
+                                                        (<div key={Math.random()}>
                                                             <span className={dayOfWeek == day.value ? styles.selected : ''}> {day.abrev}</span>
                                                         </div>))
                                                 }
@@ -839,19 +901,19 @@ export default function ModalViewSchedule(props: Iprops) {
                                     }
                                 </div>
 
-                                
+
 
                                 <div className={styles.textAreaContainer}>
                                     <div className={styles.textAreaTitle}>
                                         <h3>Comments</h3>
                                     </div>
                                     {
-                                    <textarea 
-                                        className={styles.observationTextareaProp}
-                                        name="observations" 
-                                        rows={4}
-                                        disabled={true}
-                                        value={comments}/>
+                                        <textarea
+                                            className={styles.observationTextareaProp}
+                                            name="observations"
+                                            rows={4}
+                                            disabled={true}
+                                            value={comments} />
                                     }
                                 </div>
 
@@ -875,7 +937,7 @@ export default function ModalViewSchedule(props: Iprops) {
                                                     <tr>
                                                         <th>Date</th>
                                                         <th>Time</th>
-                                                        
+
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -899,11 +961,11 @@ export default function ModalViewSchedule(props: Iprops) {
                                             <p>Select the property and service to check a available date & time</p>
                                             {
                                                 loading ?
-                                                <div className={styles.loadingScreen}>
-                                                    <ImSpinner9 size={66} color='#008461'></ImSpinner9>
-                                                </div>
-                                                :
-                                                <FcCalendar size='72' />
+                                                    <div className={styles.loadingScreen}>
+                                                        <ImSpinner9 size={66} color='#008461'></ImSpinner9>
+                                                    </div>
+                                                    :
+                                                    <FcCalendar size='72' />
                                             }
                                         </div>
 

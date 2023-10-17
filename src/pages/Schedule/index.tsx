@@ -247,8 +247,8 @@ export default function Schedule(props: any) {
 
     async function getValidHours() {
         let validHours = await ScheduleHoursValid.getAll();
-        let authorized = await QueryExec.authorized();
-        setConflicstAuthorized(authorized);
+        //let authorized = await QueryExec.authorized();
+        //setConflicstAuthorized(authorized);
         setJobHours(validHours);
     }
 
@@ -1033,6 +1033,9 @@ export default function Schedule(props: any) {
 
                 <div className={styles.contextMenu} style={{ top: positionY, left: positionX }} onMouseLeave={closeContextTeamMenu}>
                     <div className={`${styles.contextMenuOption} ${true ? '' : styles.contextMenuOptionDisabled}`} onClick={() => openChangeTeam()} >Change Team</div>
+                    <div className={`${styles.contextMenuOption} ${true ? '' : styles.contextMenuOptionDisabled}`} onClick={() => openChangeTeam()} >Substituir</div>
+                    <div className={`${styles.contextMenuOption} ${true ? '' : styles.contextMenuOptionDisabled}`} onClick={() => openChangeTeam()} >Excluir</div>
+                    <div className={`${styles.contextMenuOption} ${true ? '' : styles.contextMenuOptionDisabled}`} onClick={() => openChangeTeam()} >Adicionar</div>
                 </div>
             }
 
@@ -1271,7 +1274,10 @@ export default function Schedule(props: any) {
                                                                             <ImSpinner9 size={26} color='#008461'></ImSpinner9>
                                                                         </div> :
 
-                                                                        <div className={styles.scheduleDay}>
+                                                                        <div 
+                                                                            className={styles.scheduleDay}
+                                                                            onDragOver={dragOver}
+                                                                            onDrop={(event) => drop(event, team, dt, '')}>
 
                                                                             <div>
 
@@ -1332,6 +1338,7 @@ export default function Schedule(props: any) {
                                                                                                         draggable={true}
                                                                                                         onDragStart={(e) => startDrag(e, sche)}
                                                                                                         className={styles.serviceCard}
+                                                                                                        
                                                                                                         style={{
                                                                                                             border: `2px solid ${lineColor(sche, team)}`,
                                                                                                             backgroundColor: teamsMapColor[sche.SAS_EQUIPE_INICIAL_ID] || team.SAS_EQUIPE_COR,
@@ -1468,7 +1475,7 @@ export default function Schedule(props: any) {
                                                                             </div>
                                                                             <div
                                                                                 key={`${indexTeam}${indexDates}`}
-                                                                                onClick={() => openModalScheduleAddCurrentCard(team, dt, '', sche)}
+                                                                                onClick={() => openModalScheduleAddCurrentCard(team, dt, '', null)}
                                                                                 onDragOver={dragOver}
                                                                                 onDrop={(event) => drop(event, team, dt, '')}
                                                                                 className={`${styles.serviceCardEmpty} ${styles.serviceCard} ${sche && sche.SAS_SCHEDULE_STATUS === 'Skip' ? styles.emptyCardSkip : ''}`}

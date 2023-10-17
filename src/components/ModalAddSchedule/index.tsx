@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import styles from './styles.module.css';
 import addSchedule from '../../assets/add_schedule.png';
 import { FaPlus, FaRegWindowClose } from 'react-icons/fa';
-import { FcCalendar } from 'react-icons/fc';
+import { FcCalendar, FcCancel, FcPlus } from 'react-icons/fc';
 import ServiceDetailsService from '../../services/service-details';
 import { v4 as uuidv4, v4 } from 'uuid';
 import Select from 'react-select';
@@ -24,6 +24,9 @@ import AsyncSelect from 'react-select/async';
 import { ChangeEvent } from 'react';
 import PopoverError from '../popover-error';
 import ScheduleHoursValid from '../../services/shcedule-hours';
+import ScheduleProduto from '../../Models/schedule-produto';
+import ScheduleProdutoService from '../../services/schedule-produtos';
+
 
 
 interface Iprops {
@@ -102,10 +105,11 @@ export default function ModalAddSchedule(props: Iprops) {
 
     const [client, setClient] = useState<any>()
     const [service, setService] = useState<any>()
+    const [additionalService, setAdditionalService] = useState<Array<any>>([])
     const [property, setProperty] = useState<any>()
 
     const [startDate, setStartDate] = useState('');
-    const [startTime, setStartTime] = useState('8:30am');
+    const [startTime, setStartTime] = useState('');
     const [endDate, setEndDate] = useState('');
     const [every, setEvery] = useState<string>('1');
     const [frequency, setFrequency] = useState<'week' | 'day' | 'month' | 'year'>('week');
@@ -130,6 +134,8 @@ export default function ModalAddSchedule(props: Iprops) {
 
     const [validDates, setValidDates] = useState<any>({});
 
+
+    const [numberOfServices, setNumberOfServices] = useState<number>(1);
 
     const [serviceType, setServiceType] = useState(1);
 
@@ -176,8 +182,6 @@ export default function ModalAddSchedule(props: Iprops) {
 
     useEffect(() => {
 
-        //console.log(loadingScreen)
-
         if (!loadingScreen) {
             searchService();
         }
@@ -185,26 +189,27 @@ export default function ModalAddSchedule(props: Iprops) {
     }, [startDate, startTime, endDate, every, frequency, dayOfWeek, property, service, client, selectedTeam, recurrency])
 
 
-    function updateServices(allServices= fullServices) {
-        
-        let selectedServices = allServices.filter( (s: any) => {
+    function updateServices(allServices = fullServices) {
 
-            if(serviceType === 1) {
+        let selectedServices = allServices.filter((s: any) => {
+
+            if (serviceType === 1) {
                 return s.WC_FAMILIA_PROD_COD.toUpperCase() === "SERVICE"
             }
-            
-            if(serviceType === 3) {
+
+            if (serviceType === 3) {
                 return s.WC_FAMILIA_PROD_COD.toUpperCase() === "EXTRA SERVICE"
             }
 
             return true;
-            
+
         });
 
-        selectedServices = selectedServices.map( (s: any) => ({
+        selectedServices = selectedServices.map((s: any) => ({
             value: s.WC_PRODUTO_COD,
             label: s.WC_PRODUTO_DESC,
-            duration: s.SAS_SERVICE_DURACAO
+            duration: s.SAS_SERVICE_DURACAO,
+            description: s.WC
         }));
 
         setServiceDetails(selectedServices);
@@ -223,11 +228,11 @@ export default function ModalAddSchedule(props: Iprops) {
             setDisableRecurrency(false);
             setService([]);
             setReleaseConfirm(false);
-           
+
         }
 
         if (serviceType === 2) {
-            
+
             setRecurrency(false);
             setDisableRecurrency(true);
             setService({
@@ -244,7 +249,7 @@ export default function ModalAddSchedule(props: Iprops) {
             setService([]);
         }
 
-        if(fullServices.length > 0) {
+        if (fullServices.length > 0) {
             updateServices();
         }
 
@@ -295,7 +300,7 @@ export default function ModalAddSchedule(props: Iprops) {
     }, []);
 
     function calculateStartTime(initialTime: string) {
-        setStartTime(initialTime);
+        //setStartTime(initialTime);
     }
 
     useEffect(() => {
@@ -407,8 +412,8 @@ export default function ModalAddSchedule(props: Iprops) {
 
 
                 updateServices(services.consulta);
-                
-                
+
+
                 if (props.currentCard?.WC_PRODUTO_COD && !skip) {
                     let sv = serv.find(s => s.value === props.currentCard?.WC_PRODUTO_COD);
                     setService(sv);
@@ -471,6 +476,10 @@ export default function ModalAddSchedule(props: Iprops) {
 
     function save(event: any) {
         event.preventDefault();
+        let scheduleId = uuidv4();
+
+        let durationOfServices = additionalService.reduce((accum, service) => (accum + parseInt(service.duration)), 0);
+
 
         let conflict = false;
 
@@ -483,8 +492,7 @@ export default function ModalAddSchedule(props: Iprops) {
         //}
 
         if (conflict && serviceType === 1) {
-            alert('Error! Schedule Conflict.');
-            return;
+            alert('Alert! Schedule Conflict.');
         }
 
         setSavingSchedule(true);
@@ -497,7 +505,7 @@ export default function ModalAddSchedule(props: Iprops) {
 
                 recurringDates.map(async (rd: any) => {
 
-                    let endHour = calculateEndHour(rd.time, service.duration)
+                    let endHour = calculateEndHour(rd.time, durationOfServices)
 
                     let schedule: ScheduleModel = {
                         WC_CLIENTE_COD: client.value,
@@ -505,7 +513,7 @@ export default function ModalAddSchedule(props: Iprops) {
                         SAS_SCHEDULE_DATA: rd.date.toLocaleString('pt-BR', { dateStyle: "short" }).split('/').reverse().join(''),
                         SAS_SCHEDULE_HRFIM: endHour,
                         SAS_SCHEDULE_HRINICIO: rd.time,
-                        SAS_SCHEDULE_ID: uuidv4(),
+                        SAS_SCHEDULE_ID: scheduleId,
                         SAS_SCHEDULE_STATUS: 'ATIVO',
                         SAS_EQUIPE_INICIAL_ID: selectedTeam.value,
                         WC_PRODUTO_COD: service.value,
@@ -569,7 +577,7 @@ export default function ModalAddSchedule(props: Iprops) {
                                 SAS_SCHEDULE_WEEK_DAY: '',
                                 SAS_SCHEDULE_STATUS: 'Skip',
                                 SAS_SCHEDULE_OBSERVA: 'Service time change',
-                                SAS_SCHEDULE_ID: uuidv4(),
+                                SAS_SCHEDULE_ID: scheduleId,
 
                             }
 
@@ -578,7 +586,7 @@ export default function ModalAddSchedule(props: Iprops) {
 
                     }
 
-                    let endHour = calculateEndHour(rd.time, service.duration)
+                    let endHour = calculateEndHour(rd.time, durationOfServices)
 
 
                     let schedule: ScheduleModel = {
@@ -587,7 +595,7 @@ export default function ModalAddSchedule(props: Iprops) {
                         SAS_SCHEDULE_DATA: rd.date.toLocaleString('pt-BR', { dateStyle: "short" }),
                         SAS_SCHEDULE_HRFIM: endHour,
                         SAS_SCHEDULE_HRINICIO: rd.time,
-                        SAS_SCHEDULE_ID: props.currentCard?.SAS_SCHEDULE_ID ? props.currentCard?.SAS_SCHEDULE_ID : uuidv4(),
+                        SAS_SCHEDULE_ID: props.currentCard?.SAS_SCHEDULE_ID ? props.currentCard?.SAS_SCHEDULE_ID : scheduleId,
                         SAS_SCHEDULE_STATUS: 'ATIVO',
                         SAS_EQUIPE_INICIAL_ID: selectedTeam.value,
                         WC_PRODUTO_COD: service.value,
@@ -607,12 +615,29 @@ export default function ModalAddSchedule(props: Iprops) {
 
                     ScheduleService.save(schedule, tipo).then(
                         retorno => {
+                            additionalService.map( service => {
+
+
+                                let scheduleProduto: ScheduleProduto = {
+                                    SAS_SCHEDULE_PROD_ID: uuidv4(),
+                                    WC_PRODUTO_COD: service.value,
+                                    SAS_SCHEDULE_ID: scheduleId,
+                                    WC_PRODUTO_DESC: service.label,
+                                    SAS_SERVICE_DURACAO: service.duration
+                                }
+        
+                                ScheduleProdutoService.save(scheduleProduto)
+                                .catch(
+                                    console.log
+                                )
+        
+                            })
                             props.fecharModal(true);
                         }
                     )
                 })
             }
-        } else if (serviceType === 2 || serviceType === 3 ) {
+        } else if (serviceType === 2 || serviceType === 3) {
 
             let endHour = calculateEndHour(startTime, service.duration);
             let startHour = calculateEndHour(startTime, 5);
@@ -623,7 +648,7 @@ export default function ModalAddSchedule(props: Iprops) {
                 SAS_SCHEDULE_DATA: startDate.split('-').reverse().join('/'),
                 SAS_SCHEDULE_HRFIM: endHour,
                 SAS_SCHEDULE_HRINICIO: startHour,
-                SAS_SCHEDULE_ID: props.currentCard?.SAS_SCHEDULE_ID ? props.currentCard?.SAS_SCHEDULE_ID : uuidv4(),
+                SAS_SCHEDULE_ID: props.currentCard?.SAS_SCHEDULE_ID ? props.currentCard?.SAS_SCHEDULE_ID : scheduleId,
                 SAS_SCHEDULE_STATUS: 'ATIVO',
                 SAS_EQUIPE_INICIAL_ID: selectedTeam.value,
                 WC_PRODUTO_COD: service.value,
@@ -642,6 +667,26 @@ export default function ModalAddSchedule(props: Iprops) {
 
             ScheduleService.save(schedule, tipo).then(
                 retorno => {
+
+                    additionalService.map( service => {
+
+
+                        let scheduleProduto: ScheduleProduto = {
+                            SAS_SCHEDULE_PROD_ID: uuidv4(),
+                            WC_PRODUTO_COD: service.value,
+                            SAS_SCHEDULE_ID: scheduleId,
+                            WC_PRODUTO_DESC: service.label,
+                            SAS_SERVICE_DURACAO: service.duration
+                        }
+
+                        ScheduleProdutoService.save(scheduleProduto)
+                        .catch(
+                            console.log
+                        )
+
+                    })
+
+
                     props.fecharModal(true);
                 }
             )
@@ -659,8 +704,17 @@ export default function ModalAddSchedule(props: Iprops) {
         }
     }
 
-    function handleService(data: any) {
-        setService(data)
+    function handleService(data: any, index: number) {
+
+
+
+        if (index === 0) {
+            setService(data);
+        }
+
+        let allServices: Array<any> = [...additionalService];
+        allServices[index] = data;
+        setAdditionalService(allServices)
     }
 
     function handleProperty(data: any) {
@@ -874,9 +928,9 @@ export default function ModalAddSchedule(props: Iprops) {
         await Promise.all(dates.map(async (dtObj: any, index: number) => {
 
             let scheduleStats: ScheduleProcedureModel[] = await QueryExec.exec(`EXECUTE [dbo].[scheduler_builder_tester] '${service.value}','${selectedTeam.value}','${formatDate(dtObj.date)}','${time}'`);
-            
+
             //console.log(scheduleStats);
-            
+
             if (scheduleStats.length) {
                 dates[index]['procedure'] = scheduleStats;
             }
@@ -1007,7 +1061,7 @@ export default function ModalAddSchedule(props: Iprops) {
 
             if (serviceType === 2) {
 
-                if(comments.trim() > '') {
+                if (comments.trim() > '') {
                     setReleaseConfirm(true);
                 }
                 return;
@@ -1034,15 +1088,15 @@ export default function ModalAddSchedule(props: Iprops) {
     function handleTextarea(event: ChangeEvent<HTMLTextAreaElement>) {
 
         let value = event.target.value;
-        
+
         setComments(value);
 
         if (serviceType === 2) {
 
-            if(value.trim() > '') {
+            if (value.trim() > '') {
                 setReleaseConfirm(true);
             } else {
-                
+
                 setReleaseConfirm(false);
             }
             return;
@@ -1065,6 +1119,26 @@ export default function ModalAddSchedule(props: Iprops) {
 
     function handleRadio(event: ChangeEvent<HTMLInputElement>) {
         setServiceType(parseInt(event.target.value));
+    }
+
+    function addServiceSchedule() {
+
+        let newTotalServices: number = numberOfServices + 1;
+
+        if (newTotalServices > 4) return;
+
+        setNumberOfServices(newTotalServices)
+
+    }
+
+    function removeServiceSchedule(index: number) {
+
+        let allServices: Array<any> = [...additionalService];
+        allServices.splice(index, 1);
+        setAdditionalService(allServices);
+
+        let numberOfAllServices = numberOfServices - 1;
+        setNumberOfServices(numberOfAllServices);
     }
 
     return (
@@ -1122,14 +1196,34 @@ export default function ModalAddSchedule(props: Iprops) {
                                 {
                                     serviceType !== 2 &&
 
-                                    <Select
-                                        required
-                                        isDisabled={disableFields}
-                                        value={service}
-                                        className={styles.select}
-                                        placeholder='Service'
-                                        onChange={handleService}
-                                        options={serviceDetails} />
+                                    Object.keys([...Array(numberOfServices)]).map((_, k) =>
+
+                                        <div key={k + Math.random() } className={styles.selectFirstProductContainer}>
+
+                                            <Select
+                                                required
+                                                isDisabled={disableFields}
+                                                value={k === 0 ? service : additionalService[k]}
+                                                className={styles.selectFirstProduct}
+                                                placeholder='Service'
+                                                onChange={(data) => { handleService(data, k) }}
+                                                options={serviceDetails} />
+
+                                            {
+                                                k === 0 ?
+                                                    <FcPlus onClick={addServiceSchedule} style={{ 'fontSize': '25px', 'cursor': 'pointer' }} />
+                                                    :
+                                                    <FcCancel onClick={() => { removeServiceSchedule(k) }} style={{ 'fontSize': '25px', 'cursor': 'pointer' }} />
+
+                                            }
+                                        </div>
+
+                                    )
+
+
+
+
+
 
                                 }
 
@@ -1201,20 +1295,16 @@ export default function ModalAddSchedule(props: Iprops) {
                                     }
                                     <div className={styles.inputContainer}>
                                         <span>Start Time</span>
+                                        { /*
                                         <select value={startTime} name='StartTime' onChange={(event) => setStartTime(event.target.value)}>
                                             {
                                                 jobHours.map((hour, i) => (
                                                     <option value={hour} key={`${i}`} >{hour}</option>
                                                 ))
                                             }
-                                            
-                                            {/* <option value="10:00am">10:00am</option>
-                                            <option value="11:30am">11:30am</option>
-                                            <option value="1:00pm">1:00pm</option>
-                                            <option value="2:30pm">2:30pm</option>
-                                            <option value="3:30pm">3:30pm</option> */}
                                         </select>
-                                        {/* <input type="time" value={startTime} name='StartTime' onChange={(event) => setStartTime(event.target.value)}/> */}
+                                        */}
+                                        <input type="time" value={startTime} name='StartTime' onChange={(event) => setStartTime(event.target.value)} />
                                     </div>
                                     {recurrency && <>
                                         <div className={styles.inputContainer}>
@@ -1268,18 +1358,18 @@ export default function ModalAddSchedule(props: Iprops) {
 
                                 <div className={styles.textAreaContainer}>
                                     <div className={styles.textAreaTitle}>
-                                        <h3>This Schedule Comments { serviceType === 2 && <small style={{color: '#940000', fontSize: 12}}>*required</small>}</h3>
+                                        <h3>This Schedule Comments {serviceType === 2 && <small style={{ color: '#940000', fontSize: 12 }}>*required</small>}</h3>
                                         <div onClick={() => setToggleTextarea(!toggleTextarea)}>
                                             {toggleTextarea ? <HiOutlineChevronUp /> : < HiOutlineChevronDown />}
                                         </div>
                                     </div>
                                     {toggleTextarea &&
-                                        <textarea 
-                                            className={styles.observationTextarea} 
-                                            name="observations" 
-                                            rows={4} 
-                                            onChange={handleTextarea}  
-                                            value={comments}/>
+                                        <textarea
+                                            className={styles.observationTextarea}
+                                            name="observations"
+                                            rows={4}
+                                            onChange={handleTextarea}
+                                            value={comments} />
                                     }
                                 </div>
 
@@ -1313,7 +1403,7 @@ export default function ModalAddSchedule(props: Iprops) {
 
                                         :
 
-                                                
+
                                         serviceType === 1 &&
                                         <div className={styles.instructionSelectDate}>
                                             <p>Select the property and service to check a available date & time</p>
@@ -1332,6 +1422,11 @@ export default function ModalAddSchedule(props: Iprops) {
 
 
                                 <div className={styles.modalAction}>
+                                    
+                                    <button onClick={() => props.fecharModal()} className={`${styles.btnAction} btn btn-close`} style={{ 'color': 'white', 'background': 'var(--error)' }}>Close &nbsp;
+                                        <FaPlus style={{ 'transform': 'rotate(45deg) translatey(2px)' }} />
+                                    </button>
+
                                     <button disabled={(!recurringDates?.length || savingSchedule) && !releaseConfirm} className={`${styles.btnAction} btn btn-confirm`}>Confirm Schedule &nbsp;
 
                                         {savingSchedule ?
@@ -1343,6 +1438,7 @@ export default function ModalAddSchedule(props: Iprops) {
                                             <FaPlus />
                                         }
                                     </button>
+
                                 </div>
                             </>
                     }

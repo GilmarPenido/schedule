@@ -39,7 +39,7 @@ const ScheduleFullService= {
 
         let variables = `&dataIni=${dataIni}&dataFim=${dataEnd}`;
         let url = `${CONSTANTS.IP}${CONSTANTS.PAGE_HTML5}${PAGE_ID}${variables}`;
-        console.log(url)
+        //console.log(url)
         return api.get(url)
         .then(
             (retorno: AxiosResponse<ScheduleFullModel[]>) => { 
